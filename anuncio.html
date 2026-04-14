@@ -6,6 +6,7 @@
   <title>Anúncio — KJS Business</title>
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <script src="js/theme.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/shared.css">
@@ -172,6 +173,36 @@
       .sidebar-card { position: static; }
       .anuncio-preco { font-size: 26px; }
     }
+
+/* ═══ TEMA CLARO — anuncio ═══ */
+[data-theme="light"] {
+  --bg:      #F0F0F2;
+  --bg-card: #FFFFFF;
+  --bg-card-2: #E8E8EA;
+  --text:    #0A0A0A;
+  --text-2:  #5C5C5C;
+  --sep:     rgba(0,0,0,.08);
+  --primary: #D4A017;
+}
+[data-theme="light"] .nav { background: rgba(240,240,242,.92); border-bottom-color: rgba(0,0,0,.08); }
+[data-theme="light"] .galeria-principal { background: #FFFFFF; }
+[data-theme="light"] .specs-grid { background: rgba(0,0,0,.06); }
+[data-theme="light"] .spec-item { background: #FFFFFF; }
+[data-theme="light"] .anuncio-vendor { background: #FFFFFF; }
+[data-theme="light"] .pgto-tag { background: #F0F0F2; border-color: rgba(0,0,0,.1); }
+
+#theme-toggle {
+  width:36px;height:36px;border-radius:10px;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:16px;transition:all .22s;
+  margin-left:auto;
+}
+[data-theme="light"] #theme-toggle {
+  background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.12);
+}
+#theme-toggle:hover{border-color:rgba(212,160,23,.4);}
+
   </style>
 </head>
 <body>

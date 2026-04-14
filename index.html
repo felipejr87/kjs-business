@@ -1,482 +1,1675 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KJS Business — Carros e Imóveis Selecionados</title>
-  <meta name="description" content="Carros e imóveis selecionados com qualidade. Negocie direto, sem enrolação.">
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/shared.css">
-  <style>
-    /* ========================================================
-       VITRINE — estilos específicos
-       ======================================================== */
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0A">
+<meta name="description" content="KJS Business — Kleber encontra, negocia e entrega o que você quer. Carros, imóveis, motos, celulares e muito mais.">
+<title>KJS Business — Kleber resolve pra você</title>
+<script src="js/theme.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
-    /* NAV */
-    .nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      height: 64px;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 32px;
-      background: rgba(10,10,10,.85);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--sep);
-      transition: background .3s;
-    }
-    .nav-logo {
-      display: flex; align-items: center; gap: 10px;
-      text-decoration: none;
-      font-family: var(--font-brand);
-      font-size: 17px;
-      font-weight: 800;
-      color: var(--text);
-      letter-spacing: -.02em;
-    }
-    .nav-logo-icon {
-      width: 32px; height: 32px;
-      background: var(--primary);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-    }
-    .nav-logo span { color: var(--primary); }
-    .nav-actions { display: flex; gap: 12px; }
-    .nav-wpp {
-      display: flex; align-items: center; gap: 6px;
-      padding: 8px 16px;
-      background: rgba(37,211,102,.12);
-      border: 1px solid rgba(37,211,102,.25);
-      border-radius: 99px;
-      color: #25D366;
-      font-family: var(--font-brand);
-      font-size: 13px;
-      font-weight: 700;
-      text-decoration: none;
-      transition: all .2s;
-    }
-    .nav-wpp:hover { background: rgba(37,211,102,.2); }
+<style>
+/* ═══════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
 
-    /* HERO */
-    .hero {
-      min-height: 100vh;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center;
-      padding: 100px 24px 80px;
-      position: relative;
-      overflow: hidden;
-    }
-    .hero::before {
-      content: '';
-      position: absolute; inset: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,160,23,.18) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(212,160,23,.08) 0%, transparent 50%);
-      pointer-events: none;
-    }
-    /* Grade sutil */
-    .hero::after {
-      content: '';
-      position: absolute; inset: 0;
-      background-image:
-        linear-gradient(var(--sep) 1px, transparent 1px),
-        linear-gradient(90deg, var(--sep) 1px, transparent 1px);
-      background-size: 60px 60px;
-      -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
-      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
-      opacity: .4;
-      pointer-events: none;
-    }
-    .hero-content { position: relative; z-index: 1; max-width: 700px; }
-    .hero-eyebrow {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--primary-bg);
-      border: 1px solid rgba(212,160,23,.25);
-      border-radius: 99px;
-      padding: 6px 16px;
-      font-family: var(--font-brand);
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--primary);
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      margin-bottom: 28px;
-    }
-    .hero-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-    .hero-titulo {
-      font-family: var(--font-brand);
-      font-size: clamp(36px, 6vw, 72px);
-      font-weight: 800;
-      letter-spacing: -.04em;
-      line-height: 1.05;
-      margin-bottom: 20px;
-    }
-    .hero-titulo .gold { color: var(--primary); }
-    .hero-sub {
-      font-size: 17px;
-      color: var(--text-2);
-      margin-bottom: 40px;
-      max-width: 500px;
-      margin-left: auto; margin-right: auto;
-    }
-    .hero-ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-    .hero-cta-outline {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 12px 24px;
-      border: 1px solid var(--sep-strong);
-      border-radius: var(--r-md);
-      color: var(--text-2);
-      font-family: var(--font-brand);
-      font-size: 14px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all .2s;
-    }
-    .hero-cta-outline:hover { border-color: var(--text-3); color: var(--text); }
+:root {
+  --black:   #0A0A0A;
+  --card:    #141414;
+  --card-2:  #1A1A1A;
+  --gold:    #D4A017;
+  --gold-d:  #B8860B;
+  --gold-bg: rgba(212,160,23,.08);
+  --gold-b:  rgba(212,160,23,.20);
+  --white:   #FFFFFF;
+  --gray:    #A0A0A0;
+  --sep:     rgba(255,255,255,.07);
+  --F:       'Sora', sans-serif;
+  --B:       'DM Sans', sans-serif;
+  --r:       14px;
+  --r-lg:    20px;
+  --ease:    cubic-bezier(.4,0,.2,1);
+  --spring:  cubic-bezier(.34,1.56,.64,1);
+}
 
-    /* FILTROS */
-    .filtros-section {
-      padding: 0 24px;
-      max-width: 1200px;
-      margin: 0 auto 32px;
-    }
-    .filtros-bar {
-      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-      background: var(--bg-card);
-      border: 1px solid var(--sep);
-      border-radius: var(--r-xl);
-      padding: 16px 20px;
-    }
-    .busca-wrapper {
-      flex: 1; min-width: 200px;
-      position: relative;
-    }
-    .busca-wrapper svg {
-      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-      width: 16px; height: 16px; stroke: var(--text-3);
-    }
-    #busca-input {
-      width: 100%;
-      background: var(--bg-input); border: 1px solid var(--sep);
-      border-radius: var(--r-md); padding: 9px 12px 9px 36px;
-      color: var(--text); font-size: 14px;
-    }
-    #busca-input:focus { outline: none; border-color: var(--primary); }
-    .filtro-tipo { display: flex; gap: 6px; }
-    .filtro-tipo [data-filtro] {
-      padding: 7px 14px; border-radius: 99px;
-      border: 1px solid var(--sep-strong);
-      background: transparent; color: var(--text-2);
-      font-family: var(--font-brand); font-size: 12px; font-weight: 700;
-      cursor: pointer; transition: all .2s; white-space: nowrap;
-    }
-    .filtro-tipo [data-filtro].ativo {
-      background: var(--primary-bg); border-color: var(--primary); color: var(--primary);
-    }
-    #contador-anuncios { color: var(--text-3); font-size: 13px; white-space: nowrap; }
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--B);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
 
-    /* SEÇÃO GERAL */
-    .section { max-width: 1200px; margin: 0 auto; padding: 0 24px 64px; }
-    .section-titulo {
-      font-family: var(--font-brand);
-      font-size: 13px; font-weight: 700;
-      letter-spacing: .08em; text-transform: uppercase;
-      color: var(--primary);
-      margin-bottom: 20px;
-    }
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+button { font-family: var(--B); cursor: pointer; border: none; background: none; }
 
-    /* DESTAQUES — carrossel */
-    #section-destaques { padding: 0 0 48px; }
-    .destaques-header { max-width: 1200px; margin: 0 auto; padding: 0 24px; margin-bottom: 20px; }
-    #destaques-track {
-      display: flex; gap: 16px;
-      overflow-x: auto; scroll-snap-type: x mandatory;
-      scroll-padding: 24px;
-      padding: 4px 24px 16px;
-      -ms-overflow-style: none; scrollbar-width: none;
-    }
-    #destaques-track::-webkit-scrollbar { display: none; }
-    .destaque-card {
-      flex: 0 0 340px; scroll-snap-align: start;
-      border-radius: var(--r-xl);
-      overflow: hidden; cursor: pointer;
-      border: 1px solid var(--sep);
-      transition: transform .2s, box-shadow .2s;
-    }
-    .destaque-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-gold); }
-    .destaque-foto { position: relative; height: 220px; }
-    .destaque-foto img { width: 100%; height: 100%; object-fit: cover; }
-    .destaque-overlay {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      padding: 16px;
-      background: linear-gradient(to top, rgba(0,0,0,.85) 0%, transparent 100%);
-    }
-    .destaque-titulo { font-family: var(--font-brand); font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-    .destaque-preco { font-family: var(--font-brand); font-size: 20px; font-weight: 800; color: var(--primary); }
-    .destaque-specs { font-size: 12px; color: rgba(255,255,255,.6); margin-top: 4px; }
-    .destaque-card .badge-tipo { position: absolute; top: 12px; left: 12px; }
+/* ═══════════════════════════════════
+   TYPOGRAPHY
+═══════════════════════════════════ */
+.f-brand { font-family: var(--F); }
+.label {
+  font-family: var(--F);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
 
-    /* GRID DE ANÚNCIOS */
-    #grid-anuncios {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
-    }
-    .card-anuncio {
-      background: var(--bg-card);
-      border: 1px solid var(--sep);
-      border-radius: var(--r-xl);
-      overflow: hidden; cursor: pointer;
-      transition: transform .2s, border-color .2s, box-shadow .2s;
-    }
-    .card-anuncio:hover { transform: translateY(-4px); border-color: var(--sep-strong); box-shadow: var(--shadow-card); }
-    .card-foto {
-      position: relative; height: 200px; overflow: hidden;
-      background: var(--bg-card-2);
-    }
-    .card-foto img {
-      width: 100%; height: 100%; object-fit: cover;
-      transition: transform .4s;
-    }
-    .card-anuncio:hover .card-foto img { transform: scale(1.04); }
-    .card-foto .badge-tipo { position: absolute; top: 10px; left: 10px; }
-    .card-hover-btn {
-      position: absolute; bottom: 10px; right: 10px;
-      background: var(--primary); color: #000;
-      font-family: var(--font-brand); font-size: 11px; font-weight: 700;
-      padding: 5px 12px; border-radius: 99px;
-      opacity: 0; transform: translateY(4px);
-      transition: all .2s;
-    }
-    .card-anuncio:hover .card-hover-btn { opacity: 1; transform: none; }
-    .card-info { padding: 16px; }
-    .card-titulo {
-      font-family: var(--font-brand);
-      font-size: 15px; font-weight: 700; margin-bottom: 6px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .card-specs { font-size: 12px; color: var(--text-2); margin-bottom: 10px; }
-    .card-preco {
-      font-family: var(--font-brand);
-      font-size: 22px; font-weight: 800; color: var(--primary);
-      margin-bottom: 10px;
-    }
-    .card-pgto { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+/* ═══════════════════════════════════
+   BUTTONS
+═══════════════════════════════════ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--F);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  border-radius: var(--r);
+  padding: 14px 28px;
+  cursor: pointer;
+  transition: all .22s var(--ease);
+  white-space: nowrap;
+  border: none;
+}
+.btn:active { transform: scale(.97); }
 
-    /* SOBRE */
-    .sobre-section {
-      background: var(--bg-card);
-      border: 1px solid var(--sep);
-      border-radius: var(--r-2xl);
-      padding: 48px;
-      display: flex; gap: 48px; align-items: center;
-    }
-    .sobre-avatar {
-      width: 100px; height: 100px; border-radius: 50%;
-      background: var(--primary-bg);
-      border: 3px solid var(--primary);
-      flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-brand); font-size: 36px; font-weight: 800; color: var(--primary);
-    }
-    .sobre-nome { font-family: var(--font-brand); font-size: 24px; font-weight: 800; margin-bottom: 8px; }
-    .sobre-bio { color: var(--text-2); font-size: 15px; margin-bottom: 20px; line-height: 1.7; }
-    .sobre-stats { display: flex; gap: 32px; margin-bottom: 20px; }
-    .sobre-stat-n { font-family: var(--font-brand); font-size: 28px; font-weight: 800; color: var(--primary); }
-    .sobre-stat-l { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.btn-gold {
+  background: var(--gold);
+  color: #000;
+}
+.btn-gold:hover { background: #e8b520; box-shadow: 0 8px 24px rgba(212,160,23,.35); transform: translateY(-1px); }
 
-    /* FOOTER */
-    footer {
-      border-top: 1px solid var(--sep);
-      padding: 40px 24px;
-      text-align: center;
-      color: var(--text-3); font-size: 13px;
-    }
-    .footer-pgto { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
-    .footer-pgto-item {
-      display: flex; align-items: center; gap: 6px;
-      color: var(--text-2); font-size: 13px; font-weight: 500;
-    }
-    .footer-pgto-item svg { width: 18px; height: 18px; stroke: var(--text-3); }
+.btn-outline {
+  background: transparent;
+  color: var(--white);
+  border: 1px solid rgba(255,255,255,.25);
+}
+.btn-outline:hover { border-color: rgba(255,255,255,.6); background: rgba(255,255,255,.05); }
 
-    /* WhatsApp flutuante */
-    #wpp-float {
-      position: fixed; bottom: 24px; right: 24px; z-index: 99;
-      width: 56px; height: 56px;
-      background: #25D366;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      text-decoration: none;
-      box-shadow: 0 4px 20px rgba(37,211,102,.35);
-      transition: transform .2s, box-shadow .2s;
-    }
-    #wpp-float:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(37,211,102,.5); }
-    #wpp-float svg { width: 28px; height: 28px; fill: white; }
+.btn-dark {
+  background: #000;
+  color: var(--white);
+  border: 1px solid rgba(255,255,255,.15);
+}
+.btn-dark:hover { background: #111; }
 
-    /* MOBILE */
-    @media (max-width: 767px) {
-      .nav { padding: 0 16px; }
-      .hero { padding: 80px 16px 60px; }
-      .sobre-section { flex-direction: column; padding: 28px; gap: 24px; }
-      .sobre-stats { gap: 20px; }
-      .filtros-bar { flex-direction: column; align-items: stretch; }
-      .busca-wrapper { min-width: unset; }
-    }
-  </style>
+.btn-lg { padding: 16px 36px; font-size: 15px; border-radius: 16px; }
+
+/* ═══════════════════════════════════
+   LAYOUT
+═══════════════════════════════════ */
+.container { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+section { padding: 96px 0; }
+
+/* ═══════════════════════════════════
+   NAV
+═══════════════════════════════════ */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  padding: 0 20px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(10,10,10,.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--sep);
+  transition: all .3s var(--ease);
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--F);
+  font-size: 17px;
+  font-weight: 800;
+  color: #000;
+  flex-shrink: 0;
+  letter-spacing: -.02em;
+}
+
+.logo-text {
+  font-family: var(--F);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--white);
+}
+
+.logo-text span { color: var(--gold); }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-links a {
+  font-family: var(--F);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray);
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all .2s;
+}
+.nav-links a:hover { color: var(--white); background: rgba(255,255,255,.06); }
+
+.nav-cta {
+  font-family: var(--F);
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--gold);
+  color: #000;
+  padding: 9px 18px;
+  border-radius: 9px;
+  transition: all .2s;
+}
+.nav-cta:hover { background: #e8b520; }
+
+/* ═══════════════════════════════════
+   HERO
+═══════════════════════════════════ */
+.hero {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  padding-top: 64px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero-glow-1 {
+  position: absolute;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212,160,23,.10) 0%, transparent 65%);
+  top: -150px; right: -100px;
+}
+
+.hero-glow-2 {
+  position: absolute;
+  width: 400px; height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212,160,23,.05) 0%, transparent 60%);
+  bottom: 0; left: -80px;
+}
+
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  opacity: .025;
+  background-image:
+    linear-gradient(rgba(255,255,255,.6) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.6) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.hero-body {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 28px;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-b);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-family: var(--F);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  animation: fadeUp .6s .1s ease both;
+}
+
+.hero-eyebrow::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: .3; }
+}
+
+.hero-title {
+  font-family: var(--F);
+  font-size: clamp(42px, 8vw, 80px);
+  font-weight: 800;
+  letter-spacing: -.04em;
+  line-height: .95;
+  color: var(--white);
+  max-width: 700px;
+  animation: fadeUp .7s .2s ease both;
+}
+
+.hero-title .gold { color: var(--gold); }
+
+.hero-sub {
+  font-size: 17px;
+  font-weight: 300;
+  color: var(--gray);
+  line-height: 1.7;
+  max-width: 460px;
+  animation: fadeUp .7s .35s ease both;
+}
+
+.hero-sub strong { color: var(--white); font-weight: 500; }
+
+.hero-ctas {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: fadeUp .7s .45s ease both;
+}
+
+.hero-trust {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: fadeUp .7s .55s ease both;
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--F);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray);
+  letter-spacing: .04em;
+}
+
+.trust-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+
+.hero-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  max-width: 560px;
+  animation: fadeUp .7s .65s ease both;
+}
+
+.cat-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card);
+  border: 1px solid var(--sep);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-family: var(--F);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray);
+  transition: all .2s;
+}
+.cat-chip:hover {
+  border-color: var(--gold-b);
+  color: var(--gold);
+  background: var(--gold-bg);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════
+   COMO FUNCIONA
+═══════════════════════════════════ */
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--sep);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  margin-top: 56px;
+  position: relative;
+}
+
+.step-card {
+  background: var(--card);
+  padding: 40px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: background .2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.step-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-b), transparent);
+  opacity: 0;
+  transition: opacity .3s;
+}
+
+.step-card:hover { background: var(--card-2); }
+.step-card:hover::before { opacity: 1; }
+
+.step-num {
+  font-family: var(--F);
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: -.04em;
+  line-height: 1;
+  color: var(--gold);
+  opacity: .25;
+  transition: opacity .3s;
+}
+
+.step-card:hover .step-num { opacity: .6; }
+
+.step-title {
+  font-family: var(--F);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--white);
+  line-height: 1.2;
+}
+
+.step-desc {
+  font-size: 14px;
+  color: var(--gray);
+  line-height: 1.7;
+}
+
+/* ═══════════════════════════════════
+   CATEGORIAS
+═══════════════════════════════════ */
+.cats-section { background: var(--card); padding: 80px 0; }
+
+.cats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 48px;
+}
+
+.cat-card {
+  background: var(--black);
+  border: 1px solid var(--sep);
+  border-radius: var(--r-lg);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  cursor: pointer;
+  transition: all .24s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+
+.cat-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-lg);
+  border: 1px solid transparent;
+  transition: border-color .24s;
+}
+
+.cat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(0,0,0,.5);
+}
+
+.cat-card:hover::after { border-color: var(--gold-b); }
+
+.cat-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+.cat-card-name {
+  font-family: var(--F);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -.01em;
+}
+
+.cat-card-desc {
+  font-size: 13px;
+  color: var(--gray);
+  line-height: 1.6;
+}
+
+.cat-card-arrow {
+  margin-top: auto;
+  font-family: var(--F);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: all .2s;
+}
+
+.cat-card:hover .cat-card-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ═══════════════════════════════════
+   ANÚNCIOS
+═══════════════════════════════════ */
+.ads-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 48px;
+}
+
+.ad-card {
+  background: var(--card);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  border: 1px solid var(--sep);
+  transition: all .24s var(--ease);
+  cursor: pointer;
+}
+
+.ad-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.5);
+  border-color: var(--gold-b);
+}
+
+.ad-img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: var(--card-2);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ad-img img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform .4s var(--ease);
+}
+
+.ad-card:hover .ad-img img { transform: scale(1.04); }
+
+.ad-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 40px;
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+}
+
+.ad-placeholder span {
+  font-family: var(--F);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.ad-badge {
+  position: absolute;
+  top: 12px; left: 12px;
+  background: rgba(0,0,0,.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--sep);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-family: var(--F);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ad-badge-destaque {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: var(--gold);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-family: var(--F);
+  font-size: 10px;
+  font-weight: 700;
+  color: #000;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.ad-body { padding: 18px; }
+
+.ad-title {
+  font-family: var(--F);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -.01em;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ad-specs {
+  font-size: 12px;
+  color: var(--gray);
+  margin-bottom: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ad-price {
+  font-family: var(--F);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.ad-price span {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--gray);
+  letter-spacing: 0;
+}
+
+.ad-pay-icons {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.pay-tag {
+  font-family: var(--F);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,.08);
+  color: var(--gray);
+}
+
+.ad-btn {
+  width: 100%;
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-b);
+  color: var(--gold);
+  border-radius: 10px;
+  padding: 11px;
+  font-family: var(--F);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.ad-btn:hover { background: var(--gold); color: #000; }
+
+.ads-footer {
+  text-align: center;
+  margin-top: 40px;
+}
+
+/* ═══════════════════════════════════
+   SOBRE
+═══════════════════════════════════ */
+.sobre-section { background: var(--card); }
+
+.sobre-inner {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.sobre-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.sobre-photo {
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold-bg), var(--card-2));
+  border: 2px solid var(--gold-b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--F);
+  font-size: 56px;
+  font-weight: 800;
+  color: var(--gold);
+  letter-spacing: -.03em;
+  flex-shrink: 0;
+  box-shadow: 0 0 60px rgba(212,160,23,.12);
+}
+
+.sobre-sig {
+  font-family: var(--F);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -.01em;
+  text-align: center;
+}
+
+.sobre-sig span { color: var(--gold); }
+
+.sobre-stats {
+  display: flex;
+  gap: 24px;
+}
+
+.stat-box {
+  text-align: center;
+  flex: 1;
+  background: var(--black);
+  border: 1px solid var(--sep);
+  border-radius: var(--r);
+  padding: 18px 12px;
+}
+
+.stat-num {
+  font-family: var(--F);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  color: var(--gold);
+}
+
+.stat-label-s {
+  font-size: 11px;
+  color: var(--gray);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.sobre-text { display: flex; flex-direction: column; gap: 24px; }
+
+.sobre-quote {
+  font-family: var(--F);
+  font-size: clamp(24px, 3vw, 36px);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  line-height: 1.2;
+  color: var(--white);
+}
+
+.sobre-quote em {
+  font-style: normal;
+  color: var(--gold);
+}
+
+.sobre-body {
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--gray);
+  line-height: 1.8;
+}
+
+.sobre-body strong { color: var(--white); font-weight: 500; }
+
+/* ═══════════════════════════════════
+   PAGAMENTO
+═══════════════════════════════════ */
+.pay-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 48px;
+}
+
+.pay-card {
+  background: var(--card);
+  border: 1px solid var(--sep);
+  border-radius: var(--r-lg);
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: all .2s;
+}
+
+.pay-card:hover {
+  border-color: var(--gold-b);
+  background: var(--card-2);
+}
+
+.pay-icon-wrap {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.pay-name {
+  font-family: var(--F);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -.01em;
+}
+
+.pay-desc {
+  font-size: 14px;
+  color: var(--gray);
+  line-height: 1.6;
+}
+
+.pay-note {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 12px;
+  color: rgba(160,160,160,.6);
+}
+
+/* ═══════════════════════════════════
+   CTA FINAL
+═══════════════════════════════════ */
+.cta-final {
+  background: var(--gold);
+  padding: 100px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-final::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(0,0,0,.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(0,0,0,.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.cta-final-inner {
+  position: relative;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.cta-final-title {
+  font-family: var(--F);
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 800;
+  letter-spacing: -.04em;
+  line-height: 1;
+  color: #000;
+}
+
+.cta-final-sub {
+  font-size: 17px;
+  font-weight: 300;
+  color: rgba(0,0,0,.65);
+  max-width: 440px;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════
+   FOOTER
+═══════════════════════════════════ */
+.footer {
+  background: #050505;
+  border-top: 1px solid var(--sep);
+  padding: 48px 0 32px;
+}
+
+.footer-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.footer-logo { display: flex; align-items: center; gap: 10px; }
+
+.footer-links {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.footer-links a {
+  font-family: var(--F);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color .2s;
+}
+.footer-links a:hover { color: var(--gold); }
+
+.footer-legal {
+  font-size: 11px;
+  color: rgba(160,160,160,.4);
+  line-height: 1.6;
+  max-width: 540px;
+}
+
+/* ═══════════════════════════════════
+   FAB WHATSAPP
+═══════════════════════════════════ */
+.fab-wpp {
+  position: fixed;
+  bottom: 24px; right: 20px;
+  width: 58px; height: 58px;
+  border-radius: 50%;
+  background: #25D366;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 4px 20px rgba(37,211,102,.45);
+  z-index: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .22s var(--spring);
+  animation: fabIn .5s 1s var(--spring) both;
+}
+
+.fab-wpp:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 32px rgba(37,211,102,.55);
+}
+
+.fab-wpp:active { transform: scale(.95); }
+
+@keyframes fabIn {
+  from { opacity: 0; transform: scale(0); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ═══════════════════════════════════
+   SECTION HEADERS
+═══════════════════════════════════ */
+.section-header { margin-bottom: 12px; }
+.section-title {
+  font-family: var(--F);
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1.05;
+  color: var(--white);
+}
+
+.section-title .gold { color: var(--gold); }
+
+.section-sub {
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--gray);
+  margin-top: 12px;
+  max-width: 480px;
+  line-height: 1.7;
+}
+
+/* ═══════════════════════════════════
+   DIVIDER
+═══════════════════════════════════ */
+.divider {
+  height: 1px;
+  background: var(--sep);
+  margin: 0;
+}
+
+/* ═══════════════════════════════════
+   LOADING
+═══════════════════════════════════ */
+.skeleton {
+  background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ═══════════════════════════════════
+   RESPONSIVE — TABLET
+═══════════════════════════════════ */
+@media (max-width: 1023px) {
+  .cats-grid { grid-template-columns: repeat(2, 1fr); }
+  .ads-grid  { grid-template-columns: repeat(2, 1fr); }
+  .sobre-inner { grid-template-columns: 1fr; gap: 40px; }
+  .sobre-visual { flex-direction: row; justify-content: center; gap: 32px; align-items: flex-start; }
+  .steps-grid { grid-template-columns: 1fr; }
+}
+
+/* ═══════════════════════════════════
+   RESPONSIVE — MOBILE
+═══════════════════════════════════ */
+@media (max-width: 640px) {
+  section { padding: 72px 0; }
+
+  .nav-links { display: none; }
+
+  .hero { padding-top: 64px; min-height: 100svh; }
+
+  .cats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .cat-card  { padding: 20px 18px; }
+
+  .ads-grid  { grid-template-columns: 1fr; }
+
+  .pay-grid  { grid-template-columns: 1fr; gap: 12px; }
+
+  .sobre-visual { flex-direction: column; align-items: center; }
+  .sobre-stats  { width: 100%; }
+
+  .hero-ctas { flex-direction: column; align-items: stretch; }
+  .hero-ctas .btn { width: 100%; }
+
+  .btn-lg { padding: 16px 24px; }
+
+  .cta-final { padding: 72px 0; }
+}
+
+/* ═══════════════════════════════════
+   TEMA CLARO — sobreposição de variáveis
+═══════════════════════════════════ */
+[data-theme="light"] {
+  --black:   #F0F0F2;
+  --card:    #FFFFFF;
+  --card-2:  #E8E8EA;
+  --white:   #0A0A0A;
+  --gray:    #5C5C5C;
+  --sep:     rgba(0,0,0,.09);
+  --gold-bg: rgba(212,160,23,.10);
+  --gold-b:  rgba(212,160,23,.32);
+}
+
+/* Nav em modo claro */
+[data-theme="light"] .nav {
+  background: rgba(240,240,242,.92);
+  border-bottom-color: rgba(0,0,0,.08);
+}
+[data-theme="light"] .nav-links a:hover { background: rgba(0,0,0,.05); }
+
+/* Footer em modo claro */
+[data-theme="light"] .footer { background: #E2E2E4; }
+
+/* Seções com background fixo */
+[data-theme="light"] .cats-section { background: #FFFFFF; }
+[data-theme="light"] .sobre-section { background: #FFFFFF; }
+[data-theme="light"] .stat-box { background: var(--black); }
+
+/* Skeleton em modo claro */
+[data-theme="light"] .skeleton {
+  background: linear-gradient(90deg, #DADADA 25%, #EEEEEE 50%, #DADADA 75%);
+  background-size: 200% 100%;
+}
+
+/* Placeholder de anúncio sem foto */
+[data-theme="light"] .ad-placeholder {
+  background: linear-gradient(135deg, #E8E8E8 0%, #F5F5F5 100%);
+}
+
+/* Botões de outline adaptados */
+[data-theme="light"] .btn-outline {
+  border-color: rgba(0,0,0,.22);
+  color: var(--white);
+}
+[data-theme="light"] .btn-outline:hover {
+  border-color: rgba(0,0,0,.55);
+  background: rgba(0,0,0,.05);
+}
+
+/* btn-dark no CTA final (ouro) — manter legibilidade */
+[data-theme="light"] .cta-final .btn-dark { color: #FFFFFF; }
+
+/* Hero grid menos visível no claro */
+[data-theme="light"] .hero-grid { opacity: .018; filter: invert(1); }
+
+/* Toggle button */
+#theme-toggle {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--card);
+  border: 1px solid var(--sep);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px;
+  transition: all .22s; flex-shrink: 0;
+  margin-left: 4px;
+}
+#theme-toggle:hover { border-color: var(--gold-b); background: var(--gold-bg); }
+
+</style>
 </head>
 <body>
 
-  <!-- NAVEGAÇÃO -->
-  <nav class="nav">
-    <a href="/" class="nav-logo">
-      <div class="nav-logo-icon">K</div>
-      KJS <span>Business</span>
-    </a>
-    <div class="nav-actions">
-      <a href="#" id="wpp-float-nav" class="nav-wpp" target="_blank">
-        <svg viewBox="0 0 24 24" fill="white" width="16" height="16"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.531 5.85L.057 23.996l6.304-1.654A11.953 11.953 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.373l-.36-.213-3.73.979.996-3.636-.234-.374A9.818 9.818 0 0112 2.182c5.427 0 9.818 4.391 9.818 9.818 0 5.428-4.391 9.818-9.818 9.818z"/></svg>
-        Falar com Kleber
-      </a>
-    </div>
-  </nav>
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="logo-mark">K</div>
+    <div class="logo-text">KJS <span>Business</span></div>
+  </div>
+  <div class="nav-links">
+    <a href="#como">Como funciona</a>
+    <a href="#anuncios">Anúncios</a>
+    <a href="#sobre">Sobre Kleber</a>
+    <a href="#pagamento">Pagamento</a>
+  </div>
+  <a class="nav-cta" onclick="abrirWhatsApp('Olá Kleber! Quero saber mais sobre os produtos disponíveis.')">
+    💬 Falar agora
+  </a>
+  <button id="theme-toggle" onclick="kjs_toggleTheme()" title="Alternar tema" aria-label="Modo claro">
+    <span id="theme-icon">☀️</span>
+  </button>
+</nav>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-content">
-      <div class="hero-eyebrow">
-        <span class="hero-dot"></span>
-        Negócios diretos e sem enrolação
-      </div>
-      <h1 class="hero-titulo">
-        Carros e imóveis<br>
-        <span class="gold">selecionados</span> para você
+
+<!-- ═══════════════════
+     HERO
+═══════════════════ -->
+<section class="hero">
+  <div class="hero-bg">
+    <div class="hero-glow-1"></div>
+    <div class="hero-glow-2"></div>
+    <div class="hero-grid"></div>
+  </div>
+  <div class="container">
+    <div class="hero-body">
+
+      <div class="hero-eyebrow">Intermediador independente · São Paulo</div>
+
+      <h1 class="hero-title">
+        Você quer.<br>
+        <span class="gold">Kleber resolve.</span>
       </h1>
+
       <p class="hero-sub">
-        Compra e venda direta. Transparência total.<br>
-        Pagamento no PIX, débito ou crédito parcelado.
+        De <strong>carros e imóveis</strong> a <strong>celulares e motos</strong> —
+        Kleber encontra o produto certo, negocia o melhor preço e entrega pra você.
+        Sem complicação.
       </p>
+
       <div class="hero-ctas">
-        <a href="#anuncios" class="btn-primary" onclick="document.getElementById('anuncios').scrollIntoView({behavior:'smooth'}); return false;">
-          Ver anúncios ↓
-        </a>
-        <a href="#sobre" class="hero-cta-outline" onclick="document.getElementById('sobre').scrollIntoView({behavior:'smooth'}); return false;">
-          Quem sou eu
-        </a>
+        <a class="btn btn-gold btn-lg" href="#anuncios">Ver anúncios disponíveis</a>
+        <a class="btn btn-outline btn-lg" onclick="abrirWhatsApp()">💬 Falar no WhatsApp</a>
+      </div>
+
+      <div class="hero-trust">
+        <div class="trust-item"><div class="trust-dot"></div>PIX</div>
+        <div class="trust-item"><div class="trust-dot"></div>Cartão parcelado</div>
+        <div class="trust-item"><div class="trust-dot"></div>Sem burocracia</div>
+        <div class="trust-item"><div class="trust-dot"></div>Negócio garantido</div>
+      </div>
+
+      <div class="hero-categories">
+        <div class="cat-chip">🚗 Carros</div>
+        <div class="cat-chip">🏠 Imóveis</div>
+        <div class="cat-chip">🏍️ Motos</div>
+        <div class="cat-chip">📱 Celulares</div>
+        <div class="cat-chip">🔄 Repasses</div>
+        <div class="cat-chip">✨ Outros produtos</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+
+<!-- ═══════════════════
+     COMO FUNCIONA
+═══════════════════ -->
+<section id="como">
+  <div class="container">
+    <div class="section-header">
+      <div class="label">Como funciona</div>
+      <h2 class="section-title">Simples assim.</h2>
+      <p class="section-sub">Você descreve o que quer. Kleber faz o trabalho chato por você.</p>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-title">Você descreve o que quer</div>
+        <p class="step-desc">Carro, imóvel, moto, celular — manda a descrição, faixa de preço e localização. Quanto mais detalhes, melhor.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-title">Kleber encontra e negocia</div>
+        <p class="step-desc">Pesquisa, visita, avalia e negocia com o vendedor. Você não precisa se preocupar com nada disso.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-title">Negócio fechado.</div>
+        <p class="step-desc">Você recebe exatamente o que pediu, pelo melhor preço possível. Sem surpresa, sem enrolação.</p>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- DESTAQUES -->
-  <div id="section-destaques">
-    <div class="destaques-header">
-      <div class="section-titulo">⭐ Em destaque</div>
+<div class="divider"></div>
+
+
+<!-- ═══════════════════
+     CATEGORIAS
+═══════════════════ -->
+<section class="cats-section">
+  <div class="container">
+    <div class="section-header">
+      <div class="label">O que Kleber negocia</div>
+      <h2 class="section-title">Qualquer produto.<br><span class="gold">Qualquer negociação.</span></h2>
+      <p class="section-sub">Não importa o produto — se tem vendedor e comprador, Kleber está no meio resolvendo.</p>
     </div>
-    <div id="destaques-track">
+
+    <div class="cats-grid">
+      <div class="cat-card" onclick="abrirWhatsApp('Tenho interesse em negociação de carro. Pode me ajudar?')">
+        <div class="cat-icon">🚗</div>
+        <div class="cat-card-name">Carros</div>
+        <p class="cat-card-desc">Nacionais, importados, seminovos ou direto do proprietário. Kleber avalia, vistoria e negocia.</p>
+        <div class="cat-card-arrow">Quero um carro →</div>
+      </div>
+      <div class="cat-card" onclick="abrirWhatsApp('Tenho interesse em imóvel. Pode me ajudar?')">
+        <div class="cat-icon">🏠</div>
+        <div class="cat-card-name">Imóveis</div>
+        <p class="cat-card-desc">Casas, apartamentos, terrenos e salas comerciais. Compra, venda ou repasse.</p>
+        <div class="cat-card-arrow">Quero um imóvel →</div>
+      </div>
+      <div class="cat-card" onclick="abrirWhatsApp('Tenho interesse em moto. Pode me ajudar?')">
+        <div class="cat-icon">🏍️</div>
+        <div class="cat-card-name">Motos</div>
+        <p class="cat-card-desc">Esportivas, custom, trail, trabalho ou lazer. Do proprietário direto ou repasse de loja.</p>
+        <div class="cat-card-arrow">Quero uma moto →</div>
+      </div>
+      <div class="cat-card" onclick="abrirWhatsApp('Tenho interesse em celular. Pode me ajudar?')">
+        <div class="cat-icon">📱</div>
+        <div class="cat-card-name">Celulares</div>
+        <p class="cat-card-desc">iPhone, Samsung, Android — novos, seminovos ou lacrados. Avaliação completa antes de fechar.</p>
+        <div class="cat-card-arrow">Quero um celular →</div>
+      </div>
+      <div class="cat-card" onclick="abrirWhatsApp('Tenho interesse em repasse. Pode me ajudar?')">
+        <div class="cat-icon">🔄</div>
+        <div class="cat-card-name">Repasses de Loja</div>
+        <p class="cat-card-desc">Kleber tem acesso a produtos em repasse de lojas e concessionárias com preços diferenciados.</p>
+        <div class="cat-card-arrow">Ver repasses →</div>
+      </div>
+      <div class="cat-card" onclick="abrirWhatsApp('Preciso de ajuda com uma negociação. Pode me ajudar?')">
+        <div class="cat-icon">✨</div>
+        <div class="cat-card-name">Outros Produtos</div>
+        <p class="cat-card-desc">Eletrônicos, equipamentos, itens de valor — se tem comprador e vendedor, Kleber negocia.</p>
+        <div class="cat-card-arrow">Falar sobre produto →</div>
+      </div>
+      <div class="cat-card" onclick="abrirWhatsApp('Quero vender algo e preciso de um intermediador.')">
+        <div class="cat-icon">📢</div>
+        <div class="cat-card-name">Quer Vender?</div>
+        <p class="cat-card-desc">Kleber também encontra compradores qualificados para o seu produto. Sem anúncio, sem espera.</p>
+        <div class="cat-card-arrow">Quero vender →</div>
+      </div>
+      <div class="cat-card" onclick="abrirWhatsApp('Preciso de consultoria para uma negociação.')">
+        <div class="cat-icon">🤝</div>
+        <div class="cat-card-name">Consultoria</div>
+        <p class="cat-card-desc">Não sabe se o preço está justo? Kleber avalia o negócio antes de você assinar qualquer coisa.</p>
+        <div class="cat-card-arrow">Pedir consultoria →</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+
+<!-- ═══════════════════
+     ANÚNCIOS
+═══════════════════ -->
+<section id="anuncios">
+  <div class="container">
+    <div class="section-header">
+      <div class="label">Produtos disponíveis</div>
+      <h2 class="section-title">Disponíveis <span class="gold">agora.</span></h2>
+      <p class="section-sub">Produtos verificados por Kleber. Clique em qualquer um para demonstrar interesse.</p>
+    </div>
+
+    <div class="ads-grid" id="ads-grid">
       <!-- Carregado via JS -->
     </div>
-  </div>
 
-  <!-- FILTROS -->
-  <div class="filtros-section" id="anuncios">
-    <div class="filtros-bar">
-      <div class="busca-wrapper">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" id="busca-input" placeholder="Buscar por marca, modelo, cidade...">
-      </div>
-      <div class="filtro-tipo">
-        <button data-filtro="todos" class="ativo">Todos</button>
-        <button data-filtro="carro">🚗 Carros</button>
-        <button data-filtro="imovel">🏠 Imóveis</button>
-      </div>
-      <span id="contador-anuncios"></span>
+    <div class="ads-footer">
+      <a class="btn btn-outline" onclick="abrirWhatsApp('Quero ver todos os produtos disponíveis!')">
+        Ver todos os produtos →
+      </a>
     </div>
   </div>
+</section>
 
-  <!-- GRID -->
-  <div class="section">
-    <div id="grid-anuncios">
-      <!-- Skeletons e anúncios via JS -->
-    </div>
-  </div>
+<div class="divider"></div>
 
-  <!-- SOBRE -->
-  <div class="section" id="sobre">
-    <div class="section-titulo">Quem está por trás</div>
-    <div class="sobre-section">
-      <div class="sobre-avatar">K</div>
-      <div>
-        <div class="sobre-nome" data-nome>KJS Business</div>
-        <p class="sobre-bio" data-bio>Carros e imóveis selecionados com qualidade e transparência.</p>
+
+<!-- ═══════════════════
+     SOBRE
+═══════════════════ -->
+<section id="sobre" class="sobre-section">
+  <div class="container">
+    <div class="sobre-inner">
+
+      <div class="sobre-visual">
+        <div class="sobre-photo">K</div>
+        <div class="sobre-sig">
+          Kleber<br><span>KJS Business</span>
+        </div>
         <div class="sobre-stats">
-          <div>
-            <div class="sobre-stat-n" id="stat-negocios">—</div>
-            <div class="sobre-stat-l">negócios realizados</div>
+          <div class="stat-box">
+            <div class="stat-num">+100</div>
+            <div class="stat-label-s">negócios<br>fechados</div>
           </div>
-          <div>
-            <div class="sobre-stat-n">100%</div>
-            <div class="sobre-stat-l">direto com o dono</div>
-          </div>
-          <div>
-            <div class="sobre-stat-n">0</div>
-            <div class="sobre-stat-l">taxa por negócio</div>
+          <div class="stat-box">
+            <div class="stat-num">100%</div>
+            <div class="stat-label-s">negócios<br>entregues</div>
           </div>
         </div>
-        <a href="#" id="sobre-wpp" class="btn-primary" target="_blank">💬 Falar pelo WhatsApp</a>
       </div>
+
+      <div class="sobre-text">
+        <div class="label">Sobre Kleber</div>
+        <h2 class="sobre-quote">
+          "Não sou uma loja.<br>Sou o cara que <em>resolve</em><br>do começo ao fim."
+        </h2>
+        <p class="sobre-body">
+          Kleber intermediou <strong>dezenas de negócios</strong> em carros, imóveis, motos, celulares
+          e muito mais. O modelo é simples: você descreve o que quer, ele usa a rede de contatos
+          e o conhecimento de mercado para encontrar a melhor opção pelo melhor preço.
+        </p>
+        <p class="sobre-body">
+          Você não paga para buscar — o lucro vem da negociação com o vendedor.
+          <strong>Seu interesse é o interesse do Kleber</strong>: fechar o melhor negócio possível.
+        </p>
+        <a class="btn btn-gold" onclick="abrirWhatsApp('Olá Kleber! Quero conhecer melhor o seu trabalho.')">
+          💬 Fala comigo →
+        </a>
+      </div>
+
     </div>
   </div>
+</section>
 
-  <!-- FOOTER -->
-  <footer>
-    <div class="footer-pgto">
-      <div class="footer-pgto-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-        PIX
+<div class="divider"></div>
+
+
+<!-- ═══════════════════
+     PAGAMENTO
+═══════════════════ -->
+<section id="pagamento">
+  <div class="container">
+    <div class="section-header">
+      <div class="label">Formas de pagamento</div>
+      <h2 class="section-title">Do jeito que<br><span class="gold">funciona pra você.</span></h2>
+    </div>
+
+    <div class="pay-grid">
+      <div class="pay-card">
+        <div class="pay-icon-wrap">⚡</div>
+        <div class="pay-name">PIX</div>
+        <p class="pay-desc">À vista, na hora. Transferência instantânea com confirmação imediata.</p>
       </div>
-      <div class="footer-pgto-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-        Débito
+      <div class="pay-card">
+        <div class="pay-icon-wrap">💳</div>
+        <div class="pay-name">Débito</div>
+        <p class="pay-desc">À vista na maquininha. Todas as bandeiras aceitas.</p>
       </div>
-      <div class="footer-pgto-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-        Crédito parcelado
+      <div class="pay-card">
+        <div class="pay-icon-wrap">💰</div>
+        <div class="pay-name">Crédito parcelado</div>
+        <p class="pay-desc">Parcelado na maquininha. Condições variam por produto — consulte Kleber.</p>
       </div>
     </div>
-    <p>© 2024 KJS Business · Todos os direitos reservados</p>
-  </footer>
+    <p class="pay-note">Condições de parcelamento variam por item e bandeira. Consulte Kleber antes de fechar.</p>
+  </div>
+</section>
 
-  <!-- WhatsApp flutuante -->
-  <a href="#" id="wpp-float" target="_blank" rel="noopener" title="Falar com Kleber no WhatsApp">
-    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-      <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.531 5.85L.057 23.996l6.304-1.654A11.953 11.953 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.373l-.36-.213-3.73.979.996-3.636-.234-.374A9.818 9.818 0 0112 2.182c5.427 0 9.818 4.391 9.818 9.818 0 5.428-4.391 9.818-9.818 9.818z"/>
-    </svg>
-  </a>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/js/core.js"></script>
-  <script src="/js/vitrine.js"></script>
-  <script>
-    // Preencher stat de negócios após config carregada
-    document.addEventListener('DOMContentLoaded', async () => {
-      const cfg = await loadConfig();
-      const el = document.getElementById('stat-negocios');
-      if (el && cfg) el.textContent = cfg.total_negocios || '0';
-      const sobreWpp = document.getElementById('sobre-wpp');
-      if (sobreWpp && cfg?.whatsapp) {
-        const num = cfg.whatsapp.replace(/\D/g,'');
-        sobreWpp.href = `https://wa.me/${num}?text=${encodeURIComponent('Olá Kleber! Vim pelo KJS Business.')}`;
+<!-- ═══════════════════
+     CTA FINAL
+═══════════════════ -->
+<section class="cta-final">
+  <div class="container">
+    <div class="cta-final-inner">
+      <h2 class="cta-final-title">
+        Sabe o que quer.<br>Agora é só falar.
+      </h2>
+      <p class="cta-final-sub">Descreve o produto, faixa de preço e localização — Kleber responde e já começa a resolver.</p>
+      <button class="btn btn-dark btn-lg" onclick="abrirWhatsApp()">
+        💬 Falar com Kleber no WhatsApp
+      </button>
+    </div>
+  </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <div class="logo-mark">K</div>
+        <div class="logo-text">KJS <span>Business</span></div>
+      </div>
+      <div class="footer-links">
+        <a href="https://instagram.com/kjs.business" target="_blank">
+          📸 @kjs.business
+        </a>
+        <a onclick="abrirWhatsApp()">
+          💬 WhatsApp
+        </a>
+      </div>
+      <p class="footer-legal">
+        © 2026 KJS Business · Todos os direitos reservados<br>
+        Kleber atua como intermediador autônomo independente. Não é imobiliária registrada,
+        concessionária, loja de celulares nem qualquer outro estabelecimento comercial formal.
+        Toda negociação é feita diretamente entre as partes, com Kleber como facilitador.
+      </p>
+    </div>
+  </div>
+</footer>
+
+
+<!-- FAB WHATSAPP -->
+<a class="fab-wpp" onclick="abrirWhatsApp()" title="Falar com Kleber no WhatsApp">💬</a>
+
+
+<script>
+/* ═══════════════════════════════════
+   CONFIG — preencher antes de publicar
+═══════════════════════════════════ */
+var NUMERO_KLEBER = '5511999999999'; // ← PREENCHER com o número do Kleber
+var SUPABASE_URL  = 'https://nmdshljajpcnvnoebaqi.supabase.co';
+var SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tZHNobGphanBjbnZub2ViYXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNzA1MzYsImV4cCI6MjA5MTc0NjUzNn0.O2Ck7wif8Am1i2SY9aP5EsGNhf8iUO1h0_55L4c7Gyo';
+
+/* ═══════════════════════════════════
+   WHATSAPP
+═══════════════════════════════════ */
+function abrirWhatsApp(texto) {
+  var msg = texto || 'Olá Kleber! Vi seu site e quero saber mais sobre os produtos disponíveis.';
+  window.open('https://wa.me/' + NUMERO_KLEBER + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
+/* ═══════════════════════════════════
+   ÍCONE / EMOJI por tipo de produto
+═══════════════════════════════════ */
+var TIPO_CONFIG = {
+  'carro':    { emoji: '🚗', label: 'Carro' },
+  'imovel':   { emoji: '🏠', label: 'Imóvel' },
+  'moto':     { emoji: '🏍️', label: 'Moto' },
+  'celular':  { emoji: '📱', label: 'Celular' },
+  'repasse':  { emoji: '🔄', label: 'Repasse' },
+  'eletronico': { emoji: '💻', label: 'Eletrônico' },
+  'outro':    { emoji: '✨', label: 'Produto' },
+};
+
+function getTipoConfig(tipo) {
+  return TIPO_CONFIG[tipo] || TIPO_CONFIG['outro'];
+}
+
+/* ═══════════════════════════════════
+   FORMATAR PREÇO
+═══════════════════════════════════ */
+function formatarPreco(valor) {
+  if (!valor) return '—';
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(valor);
+}
+
+/* ═══════════════════════════════════
+   SPECS RESUMIDAS por tipo
+═══════════════════════════════════ */
+function buildSpecs(item) {
+  var parts = [];
+  if (item.ano)     parts.push(item.ano);
+  if (item.km)      parts.push(Number(item.km).toLocaleString('pt-BR') + ' km');
+  if (item.cidade)  parts.push(item.cidade);
+  if (item.area_m2) parts.push(item.area_m2 + ' m²');
+  if (item.marca)   parts.push(item.marca);
+  if (item.modelo)  parts.push(item.modelo);
+  return parts.slice(0, 3).join(' · ') || 'Consulte detalhes';
+}
+
+/* ═══════════════════════════════════
+   BUILD CARD HTML
+═══════════════════════════════════ */
+function buildAdCard(item) {
+  var tipo = getTipoConfig(item.tipo);
+  var foto = (item.fotos && item.fotos.length > 0) ? item.fotos[0] : null;
+  var specs = buildSpecs(item);
+  var msgWpp = 'Olá Kleber! Tenho interesse no produto: "' + item.titulo + '" por ' + formatarPreco(item.valor_venda) + '. Pode me dar mais detalhes?';
+
+  var payTags = '';
+  if (item.aceita_pix)     payTags += '<span class="pay-tag">PIX</span>';
+  if (item.aceita_debito)  payTags += '<span class="pay-tag">Débito</span>';
+  if (item.aceita_credito) payTags += '<span class="pay-tag">Crédito</span>';
+
+  var imgHtml = foto
+    ? '<img src="' + foto + '" alt="' + (item.titulo||'') + '" loading="lazy">'
+    : '<div class="ad-placeholder">' + tipo.emoji + '<span>Em breve</span></div>';
+
+  var destaqueHtml = item.destaque
+    ? '<div class="ad-badge-destaque">Destaque</div>'
+    : '';
+
+  return '<div class="ad-card" onclick="abrirWhatsApp(\'' + msgWpp.replace(/'/g, "\\'") + '\')">'
+    + '<div class="ad-img">'
+    +   imgHtml
+    +   '<div class="ad-badge">' + tipo.emoji + ' ' + tipo.label + '</div>'
+    +   destaqueHtml
+    + '</div>'
+    + '<div class="ad-body">'
+    +   '<div class="ad-title">' + (item.titulo || 'Produto disponível') + '</div>'
+    +   '<div class="ad-specs">' + specs + '</div>'
+    +   '<div class="ad-price">' + formatarPreco(item.valor_venda) + ' <span>à vista</span></div>'
+    +   '<div class="ad-pay-icons">' + payTags + '</div>'
+    +   '<button class="ad-btn" onclick="event.stopPropagation(); abrirWhatsApp(\'' + msgWpp.replace(/'/g, "\\'") + '\')">'
+    +     'Tenho interesse →'
+    +   '</button>'
+    + '</div>'
+    + '</div>';
+}
+
+/* ═══════════════════════════════════
+   PLACEHOLDERS SE VAZIO
+═══════════════════════════════════ */
+function renderPlaceholders() {
+  var grid = document.getElementById('ads-grid');
+  var placeholders = [
+    { emoji: '🚗', label: 'Carro', desc: 'Seminovo selecionado' },
+    { emoji: '🏠', label: 'Imóvel', desc: 'Apartamento ou casa' },
+    { emoji: '📱', label: 'Celular', desc: 'iPhone ou Android' },
+  ];
+  grid.innerHTML = placeholders.map(function(p) {
+    return '<div class="ad-card" onclick="abrirWhatsApp(\'Olá Kleber! Quero saber quais ' + p.label.toLowerCase() + 's estão disponíveis!\')">'
+      + '<div class="ad-img">'
+      +   '<div class="ad-placeholder">' + p.emoji + '<span>' + p.desc + '</span></div>'
+      +   '<div class="ad-badge">' + p.emoji + ' ' + p.label + '</div>'
+      + '</div>'
+      + '<div class="ad-body">'
+      +   '<div class="ad-title">Em breve</div>'
+      +   '<div class="ad-specs">Novos produtos chegando</div>'
+      +   '<div class="ad-price" style="font-size:16px;color:var(--gray)">Consulte disponibilidade</div>'
+      +   '<button class="ad-btn" onclick="event.stopPropagation(); abrirWhatsApp(\'Quero saber o que está disponível em ' + p.label.toLowerCase() + '!\')">'
+      +     '💬 Perguntar →'
+      +   '</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+/* ═══════════════════════════════════
+   RENDER SKELETONS
+═══════════════════════════════════ */
+function renderSkeletons() {
+  var grid = document.getElementById('ads-grid');
+  var skeletons = '';
+  for (var i = 0; i < 6; i++) {
+    skeletons += '<div class="ad-card">'
+      + '<div class="ad-img skeleton"></div>'
+      + '<div class="ad-body">'
+      +   '<div class="skeleton" style="height:16px;width:80%;margin-bottom:8px"></div>'
+      +   '<div class="skeleton" style="height:12px;width:60%;margin-bottom:14px"></div>'
+      +   '<div class="skeleton" style="height:28px;width:50%;margin-bottom:8px"></div>'
+      +   '<div class="skeleton" style="height:40px;width:100%"></div>'
+      + '</div>'
+      + '</div>';
+  }
+  grid.innerHTML = skeletons;
+}
+
+/* ═══════════════════════════════════
+   CARREGAR ANÚNCIOS DO SUPABASE
+═══════════════════════════════════ */
+async function carregarAnuncios() {
+  renderSkeletons();
+
+  // Se Supabase não estiver configurado, mostrar placeholders
+  if (SUPABASE_URL.includes('SEU_PROJETO') || SUPABASE_KEY.includes('SUA_ANON')) {
+    setTimeout(renderPlaceholders, 600);
+    return;
+  }
+
+  try {
+    var res = await fetch(
+      SUPABASE_URL + '/rest/v1/anuncios'
+        + '?select=id,tipo,titulo,valor_venda,fotos,marca,modelo,ano,km,cidade,area_m2,aceita_pix,aceita_credito,aceita_debito,destaque'
+        + '&status=eq.disponivel'
+        + '&order=destaque.desc,criado_em.desc'
+        + '&limit=6',
+      {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY
+        }
       }
-      const navWpp = document.getElementById('wpp-float-nav');
-      if (navWpp && cfg?.whatsapp) {
-        const num = cfg.whatsapp.replace(/\D/g,'');
-        navWpp.href = `https://wa.me/${num}?text=${encodeURIComponent('Olá! Vim pelo KJS Business.')}`;
-      }
-    });
-  </script>
+    );
+
+    var data = await res.json();
+    var grid = document.getElementById('ads-grid');
+
+    if (!data || data.length === 0) {
+      renderPlaceholders();
+      return;
+    }
+
+    grid.innerHTML = data.map(buildAdCard).join('');
+
+  } catch (e) {
+    console.warn('Supabase não conectado:', e.message);
+    renderPlaceholders();
+  }
+}
+
+/* ═══════════════════════════════════
+   INIT
+═══════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
+  carregarAnuncios();
+});
+</script>
+
 </body>
 </html>

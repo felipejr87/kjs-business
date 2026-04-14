@@ -6,6 +6,7 @@
   <title>KJS Business — Painel</title>
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <script src="js/theme.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/shared.css">
@@ -280,6 +281,50 @@
       .item-anuncio { flex-wrap: wrap; }
       .item-acoes { flex-wrap: wrap; }
     }
+
+/* ═══ TEMA CLARO — admin ═══ */
+[data-theme="light"] {
+  --bg:      #F0F0F2;
+  --bg-card: #FFFFFF;
+  --bg-card-2: #E8E8EA;
+  --text:    #0A0A0A;
+  --text-2:  #5C5C5C;
+  --text-3:  #9A9A9A;
+  --sep:     rgba(0,0,0,.08);
+}
+[data-theme="light"] .painel-nav {
+  background: rgba(240,240,242,.93);
+  border-bottom-color: rgba(0,0,0,.08);
+}
+[data-theme="light"] .login-card { box-shadow: 0 8px 40px rgba(0,0,0,.12); }
+[data-theme="light"] .login-input { background: #F5F5F5; }
+[data-theme="light"] .modal { background: #FFFFFF; }
+[data-theme="light"] .modal-header { background: #FFFFFF; }
+[data-theme="light"] .modal-footer { background: #FFFFFF; }
+[data-theme="light"] th { background: #FAFAFA; }
+[data-theme="light"] .tabela-wrap { background: #FFFFFF; }
+[data-theme="light"] .metrica-card { background: #FFFFFF; }
+[data-theme="light"] .grafico-card { background: #FFFFFF; }
+[data-theme="light"] .form-input,
+[data-theme="light"] .form-textarea,
+[data-theme="light"] .form-select { background: #F5F5F5; color: #0A0A0A; }
+[data-theme="light"] .upload-area { border-color: rgba(0,0,0,.15); }
+[data-theme="light"] .btn-cancel { color: #5C5C5C; }
+[data-theme="light"] .skeleton {
+  background: linear-gradient(90deg,#DADADA 25%,#EEEEEE 50%,#DADADA 75%);
+  background-size: 200% 100%;
+}
+
+/* Toggle */
+#theme-toggle {
+  width:36px;height:36px;border-radius:10px;
+  background:var(--bg-card);border:1px solid var(--sep);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:16px;transition:all .22s;
+  margin-left:4px;
+}
+#theme-toggle:hover{border-color:rgba(212,160,23,.35);background:rgba(212,160,23,.1);}
+
   </style>
 </head>
 <body>
