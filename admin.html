@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KJS Business — Painel</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/shared.css">
+  <style>
+    /* ========================================================
+       LOGIN
+       ======================================================== */
+    #tela-login {
+      min-height: 100vh;
+      display: none; /* JS mostra */
+      align-items: center; justify-content: center;
+      padding: 24px;
+      position: relative;
+    }
+    #tela-login::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(212,160,23,.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .login-card {
+      background: var(--bg-card);
+      border: 1px solid var(--sep);
+      border-radius: var(--r-2xl);
+      padding: 40px;
+      width: 100%; max-width: 380px;
+      position: relative;
+    }
+    .login-logo {
+      text-align: center; margin-bottom: 32px;
+    }
+    .login-logo .logo-icon {
+      width: 56px; height: 56px;
+      background: var(--primary); border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-brand); font-size: 24px; font-weight: 800;
+      color: #000; margin: 0 auto 12px;
+    }
+    .login-logo h1 { font-family: var(--font-brand); font-size: 20px; font-weight: 800; }
+    .login-logo p { color: var(--text-3); font-size: 13px; margin-top: 4px; }
+
+    #form-login { display: flex; flex-direction: column; gap: 14px; }
+    #form-login .btn-primary { width: 100%; justify-content: center; padding: 13px; font-size: 15px; margin-top: 4px; }
+
+    /* ========================================================
+       PAINEL
+       ======================================================== */
+    #tela-painel {
+      display: none; /* JS mostra */
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    /* TOPBAR */
+    .admin-topbar {
+      height: 56px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--sep);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .admin-topbar-logo {
+      font-family: var(--font-brand); font-size: 16px; font-weight: 800;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .admin-topbar-logo span {
+      background: var(--primary); color: #000; border-radius: 6px;
+      padding: 2px 8px; font-size: 11px;
+    }
+    .topbar-acao { display: flex; gap: 12px; align-items: center; }
+    .topbar-acao a {
+      color: var(--text-3); font-size: 13px; text-decoration: none;
+      font-family: var(--font-brand); font-weight: 600;
+    }
+    .topbar-acao a:hover { color: var(--text-2); }
+
+    /* LAYOUT DOIS PAINÉIS */
+    .admin-layout { display: flex; flex: 1; min-height: calc(100vh - 56px); }
+
+    /* SIDEBAR ADMIN */
+    .admin-sidebar {
+      width: 220px; flex-shrink: 0;
+      background: var(--bg-card);
+      border-right: 1px solid var(--sep);
+      padding: 20px 12px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: var(--r-md);
+      cursor: pointer; color: var(--text-2);
+      font-family: var(--font-brand); font-size: 13px; font-weight: 600;
+      transition: all .15s; user-select: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.04); color: var(--text); }
+    .nav-item.ativo { background: var(--primary-bg); color: var(--primary); }
+    .nav-icon {
+      width: 30px; height: 30px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center; font-size: 15px;
+      flex-shrink: 0;
+    }
+    .nav-item.ativo .nav-icon { background: var(--primary); }
+
+    /* ÁREA PRINCIPAL */
+    .admin-main { flex: 1; overflow-y: auto; padding: 28px; }
+
+    /* BOTTOM NAV MOBILE */
+    .admin-bottom-nav {
+      display: none;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: 60px; z-index: 100;
+      background: rgba(20,20,20,.95);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--sep);
+      justify-content: space-around; align-items: center;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .bnav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      color: var(--text-3); font-size: 10px; font-weight: 700;
+      font-family: var(--font-brand); cursor: pointer; padding: 8px 12px;
+    }
+    .bnav-item.ativo { color: var(--primary); }
+    .bnav-icon { font-size: 20px; }
+
+    /* ========================================================
+       DASHBOARD
+       ======================================================== */
+    .dashboard-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px; margin-bottom: 24px;
+    }
+    .dashboard-header h2 { font-family: var(--font-brand); font-size: 22px; font-weight: 800; }
+    .periodo-tabs { display: flex; gap: 4px; }
+    .periodo-btn {
+      padding: 6px 14px; border-radius: 99px;
+      border: 1px solid var(--sep); background: transparent;
+      color: var(--text-3); font-family: var(--font-brand); font-size: 12px; font-weight: 700;
+      cursor: pointer; transition: all .15s;
+    }
+    .periodo-btn.ativo { background: var(--primary-bg); border-color: var(--primary); color: var(--primary); }
+
+    .metricas-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px; margin-bottom: 28px;
+    }
+    .metrica-card {
+      background: var(--bg-card);
+      border: 1px solid var(--sep);
+      border-radius: var(--r-xl);
+      padding: 20px 22px;
+      transition: border-color .2s;
+    }
+    .metrica-card:hover { border-color: var(--sep-strong); }
+    .metrica-card.destaque { border-color: rgba(212,160,23,.3); background: var(--primary-bg); }
+    .metrica-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; margin-bottom: 8px; }
+    .metrica-valor { font-family: var(--font-brand); font-size: 26px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 4px; }
+    .metrica-valor.positivo { color: var(--success); }
+    .metrica-valor.negativo { color: var(--error); }
+    .metrica-sub { font-size: 12px; color: var(--text-3); }
+
+    /* GRÁFICO */
+    .grafico-section {
+      background: var(--bg-card); border: 1px solid var(--sep);
+      border-radius: var(--r-xl); padding: 24px; margin-bottom: 24px;
+    }
+    .grafico-titulo { font-family: var(--font-brand); font-size: 13px; font-weight: 700; color: var(--text-2); margin-bottom: 16px; text-transform: uppercase; letter-spacing: .05em; }
+    .grafico-barras {
+      display: flex; align-items: flex-end; gap: 8px; height: 120px;
+    }
+    .barra-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+    .barra {
+      width: 100%; background: var(--primary); border-radius: 4px 4px 0 0;
+      position: relative; transition: height .4s;
+      min-height: 4px;
+    }
+    .barra-val { display: none; position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--primary); white-space: nowrap; }
+    .barra:hover .barra-val { display: block; }
+    .barra-label { font-size: 10px; color: var(--text-3); text-align: center; white-space: nowrap; }
+
+    .dashboard-footer {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+    .top-produto { color: var(--text-2); font-size: 14px; }
+
+    /* ========================================================
+       LISTA DE ANÚNCIOS
+       ======================================================== */
+    .lista-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .lista-header h2 { font-family: var(--font-brand); font-size: 20px; font-weight: 800; }
+    .filtros-status { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+    .filtro-btn {
+      padding: 6px 14px; border-radius: 99px;
+      border: 1px solid var(--sep); background: transparent;
+      color: var(--text-3); font-family: var(--font-brand); font-size: 12px; font-weight: 700;
+      cursor: pointer; transition: all .15s;
+    }
+    .filtro-btn.ativo { background: var(--primary-bg); border-color: var(--primary); color: var(--primary); }
+
+    .lista-anuncios { display: flex; flex-direction: column; gap: 8px; }
+    .item-anuncio {
+      display: flex; align-items: center; gap: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--sep);
+      border-radius: var(--r-lg);
+      padding: 14px 16px;
+      transition: border-color .2s;
+    }
+    .item-anuncio:hover { border-color: var(--sep-strong); }
+    .item-foto { width: 72px; height: 56px; border-radius: var(--r-sm); overflow: hidden; flex-shrink: 0; }
+    .item-foto img { width: 100%; height: 100%; object-fit: cover; }
+    .item-info { flex: 1; min-width: 0; }
+    .item-titulo { font-family: var(--font-brand); font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-tipo { font-size: 11px; color: var(--text-3); margin: 2px 0 6px; }
+    .item-financeiro { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--text-2); }
+    .fin-lucro { color: var(--success); }
+    .item-status { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+    .status-badge {
+      padding: 3px 10px; border-radius: 99px;
+      font-family: var(--font-brand); font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+    .status-disponivel { background: rgba(34,197,94,.12); color: var(--success); border: 1px solid rgba(34,197,94,.25); }
+    .status-reservado  { background: rgba(245,158,11,.12); color: var(--warning); border: 1px solid rgba(245,158,11,.25); }
+    .status-vendido    { background: rgba(160,160,160,.1); color: var(--text-3); border: 1px solid rgba(160,160,160,.2); }
+    .destaque-badge { font-size: 10px; color: var(--primary); font-weight: 700; }
+    .item-acoes { display: flex; gap: 6px; }
+    .item-acoes button {
+      background: var(--bg-card-2); border: 1px solid var(--sep);
+      border-radius: var(--r-sm); padding: 6px 10px;
+      cursor: pointer; font-size: 15px; transition: all .15s;
+    }
+    .item-acoes button:hover { border-color: var(--sep-strong); background: rgba(255,255,255,.04); }
+    .item-acoes .btn-venda { border-color: rgba(34,197,94,.3); }
+    .item-acoes .btn-danger { border-color: rgba(239,68,68,.3); }
+
+    /* ========================================================
+       LISTA DE VENDAS
+       ======================================================== */
+    .lista-vendas { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+    .item-venda {
+      display: flex; align-items: center; gap: 16px;
+      background: var(--bg-card); border: 1px solid var(--sep);
+      border-radius: var(--r-lg); padding: 14px 16px;
+    }
+    .venda-info { flex: 1; min-width: 0; }
+    .venda-titulo { font-family: var(--font-brand); font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .venda-data  { font-size: 12px; color: var(--text-3); }
+    .venda-comprador { font-size: 12px; color: var(--text-2); margin-top: 4px; }
+    .venda-pgto { display: flex; flex-direction: column; gap: 4px; }
+    .venda-valores { text-align: right; font-size: 13px; color: var(--text-2); line-height: 1.6; }
+    .venda-valores strong { font-family: var(--font-brand); }
+
+    /* ========================================================
+       CONFIG
+       ======================================================== */
+    .config-form { display: flex; flex-direction: column; gap: 16px; max-width: 500px; margin-bottom: 40px; }
+    .config-section { max-width: 500px; }
+
+    /* ========================================================
+       RESPONSIVO
+       ======================================================== */
+    @media (max-width: 768px) {
+      .admin-sidebar { display: none; }
+      .admin-bottom-nav { display: flex; }
+      .admin-main { padding: 16px; padding-bottom: 80px; }
+      .metricas-grid { grid-template-columns: 1fr 1fr; }
+      .item-anuncio { flex-wrap: wrap; }
+      .item-acoes { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TELA LOGIN -->
+  <div id="tela-login">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="logo-icon">K</div>
+        <h1>KJS Business</h1>
+        <p>Acesso ao painel</p>
+      </div>
+      <form id="form-login">
+        <div class="campo-grupo">
+          <label>Email</label>
+          <input id="login-email" type="email" placeholder="seu@email.com" required autocomplete="email">
+        </div>
+        <div class="campo-grupo">
+          <label>Senha</label>
+          <input id="login-senha" type="password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-primary">Entrar no painel →</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- TELA PAINEL -->
+  <div id="tela-painel">
+
+    <!-- TOPBAR -->
+    <div class="admin-topbar">
+      <div class="admin-topbar-logo">
+        KJS Business <span>PAINEL</span>
+      </div>
+      <div class="topbar-acao">
+        <a href="/" target="_blank">Ver vitrine →</a>
+        <button class="btn-secondary" onclick="logout()" style="padding:6px 14px;font-size:12px">Sair</button>
+      </div>
+    </div>
+
+    <!-- LAYOUT -->
+    <div class="admin-layout">
+
+      <!-- SIDEBAR -->
+      <nav class="admin-sidebar">
+        <div class="nav-item ativo" data-aba="dashboard" onclick="irAba('dashboard')">
+          <div class="nav-icon">📊</div>
+          Dashboard
+        </div>
+        <div class="nav-item" data-aba="anuncios" onclick="irAba('anuncios')">
+          <div class="nav-icon">🏷️</div>
+          Anúncios
+        </div>
+        <div class="nav-item" data-aba="vendas" onclick="irAba('vendas')">
+          <div class="nav-icon">💰</div>
+          Vendas
+        </div>
+        <div class="nav-item" data-aba="config" onclick="irAba('config')">
+          <div class="nav-icon">⚙️</div>
+          Configurações
+        </div>
+      </nav>
+
+      <!-- CONTEÚDO DAS ABAS -->
+      <main class="admin-main">
+        <div id="aba-dashboard" class="aba-content">
+          <div class="metricas-grid">
+            ${Array(4).fill('<div class="metrica-card"><div class="skeleton" style="height:14px;width:60%;margin-bottom:12px"></div><div class="skeleton" style="height:28px;width:80%;margin-bottom:8px"></div><div class="skeleton" style="height:12px;width:40%"></div></div>').join('')}
+          </div>
+        </div>
+        <div id="aba-anuncios"  class="aba-content" style="display:none"></div>
+        <div id="aba-vendas"    class="aba-content" style="display:none"></div>
+        <div id="aba-config"    class="aba-content" style="display:none"></div>
+      </main>
+    </div>
+
+    <!-- BOTTOM NAV MOBILE -->
+    <div class="admin-bottom-nav">
+      <div class="bnav-item ativo" onclick="irAba('dashboard')">
+        <div class="bnav-icon">📊</div>
+        Dashboard
+      </div>
+      <div class="bnav-item" onclick="irAba('anuncios')">
+        <div class="bnav-icon">🏷️</div>
+        Anúncios
+      </div>
+      <div class="bnav-item" onclick="irAba('vendas')">
+        <div class="bnav-icon">💰</div>
+        Vendas
+      </div>
+      <div class="bnav-item" onclick="irAba('config')">
+        <div class="bnav-icon">⚙️</div>
+        Config
+      </div>
+    </div>
+
+  </div><!-- fim tela-painel -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/admin.js"></script>
+  <script>
+    // Sincronizar bottom nav com irAba
+    const _irAbaOrig = irAba;
+    function irAba(aba) {
+      _irAbaOrig(aba);
+      document.querySelectorAll('.bnav-item').forEach((el, i) => {
+        const abas = ['dashboard','anuncios','vendas','config'];
+        el.classList.toggle('ativo', abas[i] === aba);
+      });
+    }
+  </script>
+</body>
+</html>

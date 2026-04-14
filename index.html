@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KJS Business — Carros e Imóveis Selecionados</title>
+  <meta name="description" content="Carros e imóveis selecionados com qualidade. Negocie direto, sem enrolação.">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/shared.css">
+  <style>
+    /* ========================================================
+       VITRINE — estilos específicos
+       ======================================================== */
+
+    /* NAV */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px;
+      background: rgba(10,10,10,.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--sep);
+      transition: background .3s;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none;
+      font-family: var(--font-brand);
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -.02em;
+    }
+    .nav-logo-icon {
+      width: 32px; height: 32px;
+      background: var(--primary);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .nav-logo span { color: var(--primary); }
+    .nav-actions { display: flex; gap: 12px; }
+    .nav-wpp {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px;
+      background: rgba(37,211,102,.12);
+      border: 1px solid rgba(37,211,102,.25);
+      border-radius: 99px;
+      color: #25D366;
+      font-family: var(--font-brand);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .nav-wpp:hover { background: rgba(37,211,102,.2); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center;
+      padding: 100px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,160,23,.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(212,160,23,.08) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    /* Grade sutil */
+    .hero::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(var(--sep) 1px, transparent 1px),
+        linear-gradient(90deg, var(--sep) 1px, transparent 1px);
+      background-size: 60px 60px;
+      -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
+      opacity: .4;
+      pointer-events: none;
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 700px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--primary-bg);
+      border: 1px solid rgba(212,160,23,.25);
+      border-radius: 99px;
+      padding: 6px 16px;
+      font-family: var(--font-brand);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .hero-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .hero-titulo {
+      font-family: var(--font-brand);
+      font-size: clamp(36px, 6vw, 72px);
+      font-weight: 800;
+      letter-spacing: -.04em;
+      line-height: 1.05;
+      margin-bottom: 20px;
+    }
+    .hero-titulo .gold { color: var(--primary); }
+    .hero-sub {
+      font-size: 17px;
+      color: var(--text-2);
+      margin-bottom: 40px;
+      max-width: 500px;
+      margin-left: auto; margin-right: auto;
+    }
+    .hero-ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .hero-cta-outline {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px;
+      border: 1px solid var(--sep-strong);
+      border-radius: var(--r-md);
+      color: var(--text-2);
+      font-family: var(--font-brand);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .hero-cta-outline:hover { border-color: var(--text-3); color: var(--text); }
+
+    /* FILTROS */
+    .filtros-section {
+      padding: 0 24px;
+      max-width: 1200px;
+      margin: 0 auto 32px;
+    }
+    .filtros-bar {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      background: var(--bg-card);
+      border: 1px solid var(--sep);
+      border-radius: var(--r-xl);
+      padding: 16px 20px;
+    }
+    .busca-wrapper {
+      flex: 1; min-width: 200px;
+      position: relative;
+    }
+    .busca-wrapper svg {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      width: 16px; height: 16px; stroke: var(--text-3);
+    }
+    #busca-input {
+      width: 100%;
+      background: var(--bg-input); border: 1px solid var(--sep);
+      border-radius: var(--r-md); padding: 9px 12px 9px 36px;
+      color: var(--text); font-size: 14px;
+    }
+    #busca-input:focus { outline: none; border-color: var(--primary); }
+    .filtro-tipo { display: flex; gap: 6px; }
+    .filtro-tipo [data-filtro] {
+      padding: 7px 14px; border-radius: 99px;
+      border: 1px solid var(--sep-strong);
+      background: transparent; color: var(--text-2);
+      font-family: var(--font-brand); font-size: 12px; font-weight: 700;
+      cursor: pointer; transition: all .2s; white-space: nowrap;
+    }
+    .filtro-tipo [data-filtro].ativo {
+      background: var(--primary-bg); border-color: var(--primary); color: var(--primary);
+    }
+    #contador-anuncios { color: var(--text-3); font-size: 13px; white-space: nowrap; }
+
+    /* SEÇÃO GERAL */
+    .section { max-width: 1200px; margin: 0 auto; padding: 0 24px 64px; }
+    .section-titulo {
+      font-family: var(--font-brand);
+      font-size: 13px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 20px;
+    }
+
+    /* DESTAQUES — carrossel */
+    #section-destaques { padding: 0 0 48px; }
+    .destaques-header { max-width: 1200px; margin: 0 auto; padding: 0 24px; margin-bottom: 20px; }
+    #destaques-track {
+      display: flex; gap: 16px;
+      overflow-x: auto; scroll-snap-type: x mandatory;
+      scroll-padding: 24px;
+      padding: 4px 24px 16px;
+      -ms-overflow-style: none; scrollbar-width: none;
+    }
+    #destaques-track::-webkit-scrollbar { display: none; }
+    .destaque-card {
+      flex: 0 0 340px; scroll-snap-align: start;
+      border-radius: var(--r-xl);
+      overflow: hidden; cursor: pointer;
+      border: 1px solid var(--sep);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .destaque-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-gold); }
+    .destaque-foto { position: relative; height: 220px; }
+    .destaque-foto img { width: 100%; height: 100%; object-fit: cover; }
+    .destaque-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 16px;
+      background: linear-gradient(to top, rgba(0,0,0,.85) 0%, transparent 100%);
+    }
+    .destaque-titulo { font-family: var(--font-brand); font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .destaque-preco { font-family: var(--font-brand); font-size: 20px; font-weight: 800; color: var(--primary); }
+    .destaque-specs { font-size: 12px; color: rgba(255,255,255,.6); margin-top: 4px; }
+    .destaque-card .badge-tipo { position: absolute; top: 12px; left: 12px; }
+
+    /* GRID DE ANÚNCIOS */
+    #grid-anuncios {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .card-anuncio {
+      background: var(--bg-card);
+      border: 1px solid var(--sep);
+      border-radius: var(--r-xl);
+      overflow: hidden; cursor: pointer;
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+    }
+    .card-anuncio:hover { transform: translateY(-4px); border-color: var(--sep-strong); box-shadow: var(--shadow-card); }
+    .card-foto {
+      position: relative; height: 200px; overflow: hidden;
+      background: var(--bg-card-2);
+    }
+    .card-foto img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform .4s;
+    }
+    .card-anuncio:hover .card-foto img { transform: scale(1.04); }
+    .card-foto .badge-tipo { position: absolute; top: 10px; left: 10px; }
+    .card-hover-btn {
+      position: absolute; bottom: 10px; right: 10px;
+      background: var(--primary); color: #000;
+      font-family: var(--font-brand); font-size: 11px; font-weight: 700;
+      padding: 5px 12px; border-radius: 99px;
+      opacity: 0; transform: translateY(4px);
+      transition: all .2s;
+    }
+    .card-anuncio:hover .card-hover-btn { opacity: 1; transform: none; }
+    .card-info { padding: 16px; }
+    .card-titulo {
+      font-family: var(--font-brand);
+      font-size: 15px; font-weight: 700; margin-bottom: 6px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .card-specs { font-size: 12px; color: var(--text-2); margin-bottom: 10px; }
+    .card-preco {
+      font-family: var(--font-brand);
+      font-size: 22px; font-weight: 800; color: var(--primary);
+      margin-bottom: 10px;
+    }
+    .card-pgto { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+
+    /* SOBRE */
+    .sobre-section {
+      background: var(--bg-card);
+      border: 1px solid var(--sep);
+      border-radius: var(--r-2xl);
+      padding: 48px;
+      display: flex; gap: 48px; align-items: center;
+    }
+    .sobre-avatar {
+      width: 100px; height: 100px; border-radius: 50%;
+      background: var(--primary-bg);
+      border: 3px solid var(--primary);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-brand); font-size: 36px; font-weight: 800; color: var(--primary);
+    }
+    .sobre-nome { font-family: var(--font-brand); font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+    .sobre-bio { color: var(--text-2); font-size: 15px; margin-bottom: 20px; line-height: 1.7; }
+    .sobre-stats { display: flex; gap: 32px; margin-bottom: 20px; }
+    .sobre-stat-n { font-family: var(--font-brand); font-size: 28px; font-weight: 800; color: var(--primary); }
+    .sobre-stat-l { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--sep);
+      padding: 40px 24px;
+      text-align: center;
+      color: var(--text-3); font-size: 13px;
+    }
+    .footer-pgto { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+    .footer-pgto-item {
+      display: flex; align-items: center; gap: 6px;
+      color: var(--text-2); font-size: 13px; font-weight: 500;
+    }
+    .footer-pgto-item svg { width: 18px; height: 18px; stroke: var(--text-3); }
+
+    /* WhatsApp flutuante */
+    #wpp-float {
+      position: fixed; bottom: 24px; right: 24px; z-index: 99;
+      width: 56px; height: 56px;
+      background: #25D366;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      text-decoration: none;
+      box-shadow: 0 4px 20px rgba(37,211,102,.35);
+      transition: transform .2s, box-shadow .2s;
+    }
+    #wpp-float:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(37,211,102,.5); }
+    #wpp-float svg { width: 28px; height: 28px; fill: white; }
+
+    /* MOBILE */
+    @media (max-width: 767px) {
+      .nav { padding: 0 16px; }
+      .hero { padding: 80px 16px 60px; }
+      .sobre-section { flex-direction: column; padding: 28px; gap: 24px; }
+      .sobre-stats { gap: 20px; }
+      .filtros-bar { flex-direction: column; align-items: stretch; }
+      .busca-wrapper { min-width: unset; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVEGAÇÃO -->
+  <nav class="nav">
+    <a href="/" class="nav-logo">
+      <div class="nav-logo-icon">K</div>
+      KJS <span>Business</span>
+    </a>
+    <div class="nav-actions">
+      <a href="#" id="wpp-float-nav" class="nav-wpp" target="_blank">
+        <svg viewBox="0 0 24 24" fill="white" width="16" height="16"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.531 5.85L.057 23.996l6.304-1.654A11.953 11.953 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.373l-.36-.213-3.73.979.996-3.636-.234-.374A9.818 9.818 0 0112 2.182c5.427 0 9.818 4.391 9.818 9.818 0 5.428-4.391 9.818-9.818 9.818z"/></svg>
+        Falar com Kleber
+      </a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <span class="hero-dot"></span>
+        Negócios diretos e sem enrolação
+      </div>
+      <h1 class="hero-titulo">
+        Carros e imóveis<br>
+        <span class="gold">selecionados</span> para você
+      </h1>
+      <p class="hero-sub">
+        Compra e venda direta. Transparência total.<br>
+        Pagamento no PIX, débito ou crédito parcelado.
+      </p>
+      <div class="hero-ctas">
+        <a href="#anuncios" class="btn-primary" onclick="document.getElementById('anuncios').scrollIntoView({behavior:'smooth'}); return false;">
+          Ver anúncios ↓
+        </a>
+        <a href="#sobre" class="hero-cta-outline" onclick="document.getElementById('sobre').scrollIntoView({behavior:'smooth'}); return false;">
+          Quem sou eu
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- DESTAQUES -->
+  <div id="section-destaques">
+    <div class="destaques-header">
+      <div class="section-titulo">⭐ Em destaque</div>
+    </div>
+    <div id="destaques-track">
+      <!-- Carregado via JS -->
+    </div>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="filtros-section" id="anuncios">
+    <div class="filtros-bar">
+      <div class="busca-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="busca-input" placeholder="Buscar por marca, modelo, cidade...">
+      </div>
+      <div class="filtro-tipo">
+        <button data-filtro="todos" class="ativo">Todos</button>
+        <button data-filtro="carro">🚗 Carros</button>
+        <button data-filtro="imovel">🏠 Imóveis</button>
+      </div>
+      <span id="contador-anuncios"></span>
+    </div>
+  </div>
+
+  <!-- GRID -->
+  <div class="section">
+    <div id="grid-anuncios">
+      <!-- Skeletons e anúncios via JS -->
+    </div>
+  </div>
+
+  <!-- SOBRE -->
+  <div class="section" id="sobre">
+    <div class="section-titulo">Quem está por trás</div>
+    <div class="sobre-section">
+      <div class="sobre-avatar">K</div>
+      <div>
+        <div class="sobre-nome" data-nome>KJS Business</div>
+        <p class="sobre-bio" data-bio>Carros e imóveis selecionados com qualidade e transparência.</p>
+        <div class="sobre-stats">
+          <div>
+            <div class="sobre-stat-n" id="stat-negocios">—</div>
+            <div class="sobre-stat-l">negócios realizados</div>
+          </div>
+          <div>
+            <div class="sobre-stat-n">100%</div>
+            <div class="sobre-stat-l">direto com o dono</div>
+          </div>
+          <div>
+            <div class="sobre-stat-n">0</div>
+            <div class="sobre-stat-l">taxa por negócio</div>
+          </div>
+        </div>
+        <a href="#" id="sobre-wpp" class="btn-primary" target="_blank">💬 Falar pelo WhatsApp</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-pgto">
+      <div class="footer-pgto-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        PIX
+      </div>
+      <div class="footer-pgto-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Débito
+      </div>
+      <div class="footer-pgto-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Crédito parcelado
+      </div>
+    </div>
+    <p>© 2024 KJS Business · Todos os direitos reservados</p>
+  </footer>
+
+  <!-- WhatsApp flutuante -->
+  <a href="#" id="wpp-float" target="_blank" rel="noopener" title="Falar com Kleber no WhatsApp">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+      <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.531 5.85L.057 23.996l6.304-1.654A11.953 11.953 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.373l-.36-.213-3.73.979.996-3.636-.234-.374A9.818 9.818 0 0112 2.182c5.427 0 9.818 4.391 9.818 9.818 0 5.428-4.391 9.818-9.818 9.818z"/>
+    </svg>
+  </a>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/vitrine.js"></script>
+  <script>
+    // Preencher stat de negócios após config carregada
+    document.addEventListener('DOMContentLoaded', async () => {
+      const cfg = await loadConfig();
+      const el = document.getElementById('stat-negocios');
+      if (el && cfg) el.textContent = cfg.total_negocios || '0';
+      const sobreWpp = document.getElementById('sobre-wpp');
+      if (sobreWpp && cfg?.whatsapp) {
+        const num = cfg.whatsapp.replace(/\D/g,'');
+        sobreWpp.href = `https://wa.me/${num}?text=${encodeURIComponent('Olá Kleber! Vim pelo KJS Business.')}`;
+      }
+      const navWpp = document.getElementById('wpp-float-nav');
+      if (navWpp && cfg?.whatsapp) {
+        const num = cfg.whatsapp.replace(/\D/g,'');
+        navWpp.href = `https://wa.me/${num}?text=${encodeURIComponent('Olá! Vim pelo KJS Business.')}`;
+      }
+    });
+  </script>
+</body>
+</html>
