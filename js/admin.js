@@ -1,748 +1,533 @@
 // ============================================================
 // KJS Business — admin.js
-// Painel do Kleber: login, dashboard, anúncios, vendas
 // ============================================================
 
-let anunciosAdmin = [];
-let vendasAdmin = [];
-let periodoAtivo = 'mes';
-let abaAtiva = 'dashboard';
+const SUPABASE_URL_ADMIN  = 'https://nmdshljajpcnvnoebaqi.supabase.co';
+const SUPABASE_ANON_ADMIN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tZHNobGphanBjbnZub2ViYXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNzA1MzYsImV4cCI6MjA5MTc0NjUzNn0.O2Ck7wif8Am1i2SY9aP5EsGNhf8iUO1h0_55L4c7Gyo';
 
-document.addEventListener('DOMContentLoaded', async () => {
-  await loadConfig();
-  const user = await getUser();
-  if (user) {
+// Supabase pode já ter sido init pelo core.js — reutiliza ou cria
+const _db = (typeof _supabase !== 'undefined') ? _supabase
+  : supabase.createClient(SUPABASE_URL_ADMIN, SUPABASE_ANON_ADMIN);
+
+// Estado global
+let _periodo   = 'mes';
+let _anuncios  = [];
+let _vendas    = [];
+let _editId    = null;
+let _fotosUpload = [];
+let _vendaId   = null;
+
+// ── Auth ──────────────────────────────────────────────────
+const SK = 'kjs_admin_v1';
+
+function _sessaoOk() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SK) || 'null');
+    return s && (Date.now() - s.ts) < 8 * 3600000;
+  } catch { return false; }
+}
+
+function logout() {
+  localStorage.removeItem(SK);
+  document.getElementById('tela-painel').classList.remove('visivel');
+  document.getElementById('tela-login').classList.remove('escondido');
+}
+
+async function fazerLogin(e) {
+  if (e) e.preventDefault();
+  const senha  = document.getElementById('senha-input').value.trim();
+  const btn    = document.getElementById('btn-login');
+  const erro   = document.getElementById('login-erro');
+  if (!senha) return;
+
+  btn.textContent = 'Verificando…';
+  btn.disabled    = true;
+  erro.style.display = 'none';
+
+  try {
+    const { data, error } = await _db.rpc('kjs_verificar_senha', { p_senha: senha });
+    if (error || !data) throw new Error('senha errada');
+    localStorage.setItem(SK, JSON.stringify({ ts: Date.now() }));
     mostrarPainel();
-  } else {
-    mostrarLogin();
+  } catch {
+    erro.style.display = 'block';
+    btn.textContent = 'Entrar →';
+    btn.disabled    = false;
+    document.getElementById('senha-input').value = '';
   }
-});
-
-// ============================================================
-// AUTH
-// ============================================================
-function mostrarLogin() {
-  document.getElementById('tela-login').style.display = 'flex';
-  document.getElementById('tela-painel').style.display = 'none';
 }
 
 function mostrarPainel() {
-  document.getElementById('tela-login').style.display = 'none';
-  document.getElementById('tela-painel').style.display = 'flex';
-  carregarTudo();
+  document.getElementById('tela-login').classList.add('escondido');
+  document.getElementById('tela-painel').classList.add('visivel');
+  carregarDados();
 }
 
-// Formulário de login
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('form-login');
-  if (!form) return;
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const senha = document.getElementById('login-senha').value;
-    const btn = form.querySelector('button[type=submit]');
-    btn.textContent = 'Entrando...';
-    btn.disabled = true;
-    try {
-      await login(email, senha);
-      mostrarPainel();
-    } catch (err) {
-      toast('Email ou senha incorretos', 'error');
-      btn.textContent = 'Entrar';
-      btn.disabled = false;
-    }
-  });
-});
-
-// ============================================================
-// CARREGAMENTO GERAL
-// ============================================================
-async function carregarTudo() {
-  const [{ data: anuncios }, { data: vendas }] = await Promise.all([
-    supabase.from('anuncios').select('*').order('criado_em', { ascending: false }),
-    supabase.from('vendas').select('*, anuncios(titulo, valor_pago)').order('vendido_em', { ascending: false })
-  ]);
-  anunciosAdmin = anuncios || [];
-  vendasAdmin = vendas || [];
-  renderAba('dashboard');
+// ── Dados ─────────────────────────────────────────────────
+async function carregarDados() {
+  const { data } = await _db.rpc('kjs_admin_get_dashboard');
+  _anuncios = data?.anuncios || [];
+  _vendas   = data?.vendas   || [];
+  renderDashboard();
+  renderListaAnuncios();
+  renderListaVendas();
+  renderConfig();
 }
 
-// ============================================================
-// NAVEGAÇÃO ENTRE ABAS
-// ============================================================
-function irAba(aba) {
-  abaAtiva = aba;
-  document.querySelectorAll('.nav-item').forEach(el => {
-    el.classList.toggle('ativo', el.dataset.aba === aba);
-  });
-  document.querySelectorAll('.aba-content').forEach(el => {
-    el.style.display = el.id === `aba-${aba}` ? '' : 'none';
-  });
-  renderAba(aba);
+// ── Dashboard ─────────────────────────────────────────────
+function setPeriodo(p) {
+  _periodo = p;
+  document.querySelectorAll('.periodo-btn').forEach(b => b.classList.toggle('ativo', b.dataset.periodo === p));
+  renderDashboard();
 }
 
-function renderAba(aba) {
-  if (aba === 'dashboard') renderDashboard();
-  if (aba === 'anuncios') renderListaAnuncios();
-  if (aba === 'vendas') renderListaVendas();
-  if (aba === 'config') renderConfig();
+function _vendasFiltradas() {
+  const dias = { semana:7, mes:30, trimestre:90, ano:365 }[_periodo] || 30;
+  const corte = Date.now() - dias * 86400000;
+  return _vendas.filter(v => new Date(v.vendido_em).getTime() >= corte);
 }
 
-// ============================================================
-// DASHBOARD
-// ============================================================
-function filtrarPorPeriodo(vendas) {
-  const now = new Date();
-  return vendas.filter(v => {
-    const d = new Date(v.vendido_em);
-    if (periodoAtivo === 'semana') {
-      return (now - d) <= 7 * 86400000;
-    }
-    if (periodoAtivo === 'mes') {
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    }
-    if (periodoAtivo === 'trimestre') {
-      return (now - d) <= 90 * 86400000;
-    }
-    return d.getFullYear() === now.getFullYear();
-  });
-}
-
-function calcularMetricas(vendas) {
+function _calcular(vendas) {
   return vendas.reduce((acc, v) => {
-    const custo = v.anuncios?.valor_pago || 0;
+    const a = _anuncios.find(x => x.id === v.anuncio_id);
+    const custo = a?.valor_pago || 0;
     const lucro = v.valor_final - custo;
-    return {
-      receita: acc.receita + v.valor_final,
-      custo: acc.custo + custo,
-      lucro: acc.lucro + lucro,
-      count: acc.count + 1
-    };
-  }, { receita: 0, custo: 0, lucro: 0, count: 0 });
+    return { receita: acc.receita + v.valor_final, custo: acc.custo + custo, lucro: acc.lucro + lucro, count: acc.count + 1 };
+  }, { receita:0, custo:0, lucro:0, count:0 });
 }
 
 function renderDashboard() {
-  const vendas = filtrarPorPeriodo(vendasAdmin);
-  const m = calcularMetricas(vendas);
-  const margem = m.receita > 0 ? (m.lucro / m.receita * 100).toFixed(1) : 0;
-  const ticket = m.count > 0 ? m.receita / m.count : 0;
-  const ativos = anunciosAdmin.filter(a => a.status === 'disponivel').length;
+  const vf = _vendasFiltradas();
+  const { receita, custo, lucro, count } = _calcular(vf);
+  const margem = receita > 0 ? (lucro / receita * 100).toFixed(1) : '0.0';
+  const ticket  = count > 0 ? receita / count : 0;
 
-  // Produto mais rentável
-  let topProduto = '—';
-  if (vendas.length) {
-    const melhor = vendas.reduce((best, v) => {
-      const lucro = v.valor_final - (v.anuncios?.valor_pago || 0);
-      return lucro > best.lucro ? { lucro, titulo: v.anuncios?.titulo || '—' } : best;
-    }, { lucro: -Infinity, titulo: '—' });
-    topProduto = melhor.titulo.length > 20 ? melhor.titulo.slice(0, 20) + '…' : melhor.titulo;
+  const ativos  = _anuncios.filter(a => a.status === 'disponivel').length;
+  const topItem = [...vf].sort((a,b) => {
+    const la = a.valor_final - (_anuncios.find(x=>x.id===a.anuncio_id)?.valor_pago||0);
+    const lb = b.valor_final - (_anuncios.find(x=>x.id===b.anuncio_id)?.valor_pago||0);
+    return lb - la;
+  })[0];
+  const topNome = topItem ? (_anuncios.find(x=>x.id===topItem.anuncio_id)?.titulo || '—') : '—';
+
+  // Gráfico: lucro por semana (últimas 8)
+  const semanas = [];
+  for (let i = 7; i >= 0; i--) {
+    const ini = Date.now() - (i+1)*7*86400000;
+    const fim = Date.now() - i*7*86400000;
+    const vs  = _vendas.filter(v => { const d = new Date(v.vendido_em).getTime(); return d >= ini && d < fim; });
+    semanas.push({ label: `S${8-i}`, lucro: _calcular(vs).lucro });
   }
+  const maxL = Math.max(...semanas.map(s=>s.lucro), 1);
 
-  document.getElementById('aba-dashboard').innerHTML = `
-    <div class="dashboard-header">
+  const el = document.getElementById('aba-dashboard');
+  el.innerHTML = `
+    <div class="page-header">
       <h2>Dashboard</h2>
       <div class="periodo-tabs">
-        ${['semana','mes','trimestre','ano'].map(p => `
-          <button class="periodo-btn ${periodoAtivo === p ? 'ativo' : ''}"
-            onclick="setPeriodo('${p}')">${{ semana:'Semana', mes:'Mês', trimestre:'Trimestre', ano:'Ano' }[p]}</button>
-        `).join('')}
+        ${['semana','mes','trimestre','ano'].map(p =>
+          `<button class="periodo-btn ${p===_periodo?'ativo':''}" data-periodo="${p}" onclick="setPeriodo('${p}')">${{semana:'7d',mes:'30d',trimestre:'90d',ano:'1a'}[p]}</button>`
+        ).join('')}
       </div>
     </div>
-
     <div class="metricas-grid">
-      <div class="metrica-card destaque">
-        <div class="metrica-label">Lucro</div>
-        <div class="metrica-valor ${m.lucro >= 0 ? 'positivo' : 'negativo'}">${formatarMoeda(m.lucro)}</div>
-        <div class="metrica-sub">Margem: ${margem}%</div>
-      </div>
-      <div class="metrica-card">
-        <div class="metrica-label">Faturamento</div>
-        <div class="metrica-valor">${formatarMoeda(m.receita)}</div>
-        <div class="metrica-sub">${m.count} venda${m.count !== 1 ? 's' : ''}</div>
-      </div>
-      <div class="metrica-card">
-        <div class="metrica-label">Custo total</div>
-        <div class="metrica-valor">${formatarMoeda(m.custo)}</div>
-        <div class="metrica-sub">Valor de compra</div>
-      </div>
-      <div class="metrica-card">
-        <div class="metrica-label">Ticket médio</div>
-        <div class="metrica-valor">${formatarMoeda(ticket)}</div>
-        <div class="metrica-sub">${ativos} anúncio${ativos !== 1 ? 's' : ''} ativo${ativos !== 1 ? 's' : ''}</div>
-      </div>
+      <div class="metrica-card"><div class="metrica-label">Faturamento</div><div class="metrica-valor">${_fmt(receita)}</div></div>
+      <div class="metrica-card"><div class="metrica-label">Custo total</div><div class="metrica-valor">${_fmt(custo)}</div></div>
+      <div class="metrica-card destaque"><div class="metrica-label">Lucro líquido</div><div class="metrica-valor positivo">${_fmt(lucro)}</div></div>
+      <div class="metrica-card"><div class="metrica-label">Margem</div><div class="metrica-valor">${margem}%</div></div>
+      <div class="metrica-card"><div class="metrica-label">Anúncios ativos</div><div class="metrica-valor">${ativos}</div></div>
+      <div class="metrica-card"><div class="metrica-label">Vendas no período</div><div class="metrica-valor">${count}</div></div>
+      <div class="metrica-card"><div class="metrica-label">Ticket médio</div><div class="metrica-valor">${_fmt(ticket)}</div></div>
+      <div class="metrica-card"><div class="metrica-label">Mais rentável</div><div class="metrica-valor" style="font-size:14px">${topNome}</div></div>
     </div>
-
-    ${vendas.length ? renderGraficoBarras(vendas) : ''}
-
-    <div class="dashboard-footer">
-      <button class="btn-primary" onclick="irAba('anuncios')">+ Novo anúncio</button>
-      <span class="top-produto">Top produto: <strong>${topProduto}</strong></span>
-    </div>
-  `;
-}
-
-function setPeriodo(p) {
-  periodoAtivo = p;
-  renderDashboard();
-}
-
-// Gráfico de barras simples em CSS
-function renderGraficoBarras(vendas) {
-  // Agrupar por dia (últimos 10 negócios)
-  const grupos = {};
-  vendas.slice(-10).forEach(v => {
-    const d = formatarData(v.vendido_em);
-    const lucro = v.valor_final - (v.anuncios?.valor_pago || 0);
-    grupos[d] = (grupos[d] || 0) + lucro;
-  });
-  const entries = Object.entries(grupos);
-  const maxVal = Math.max(...entries.map(e => e[1]), 1);
-
-  return `
     <div class="grafico-section">
-      <div class="grafico-titulo">Lucro por negócio</div>
+      <div class="grafico-titulo">Lucro por semana (últimas 8)</div>
       <div class="grafico-barras">
-        ${entries.map(([data, lucro]) => `
+        ${semanas.map(s => `
           <div class="barra-wrap">
-            <div class="barra" style="height:${Math.max((lucro/maxVal)*100,4)}%" title="${formatarMoeda(lucro)}">
-              <span class="barra-val">${formatarMoeda(lucro)}</span>
-            </div>
-            <div class="barra-label">${data.slice(0,5)}</div>
-          </div>
-        `).join('')}
+            <div class="barra" style="height:${Math.round((s.lucro/maxL)*90)+10}px" title="${_fmt(s.lucro)}"></div>
+            <div class="barra-label">${s.label}</div>
+          </div>`).join('')}
       </div>
     </div>
   `;
 }
 
-// ============================================================
-// LISTA DE ANÚNCIOS
-// ============================================================
+// ── Lista Anúncios ─────────────────────────────────────────
 function renderListaAnuncios() {
   const el = document.getElementById('aba-anuncios');
-  if (!el) return;
+  const statusBadge = { disponivel:'badge-verde', reservado:'badge-amarelo', vendido:'badge-cinza' };
+  const statusLabel = { disponivel:'Disponível', reservado:'Reservado', vendido:'Vendido' };
 
   el.innerHTML = `
     <div class="lista-header">
-      <h2>Anúncios (${anunciosAdmin.length})</h2>
-      <button class="btn-primary" onclick="abrirModalAnuncio()">+ Novo anúncio</button>
+      <h2 style="font-family:var(--font-brand);font-size:22px;font-weight:800">Anúncios</h2>
+      <button class="btn-primary" onclick="novoAnuncio()">+ Novo anúncio</button>
     </div>
-    <div class="filtros-status">
-      ${['todos','disponivel','reservado','vendido'].map(s => `
-        <button class="filtro-btn" data-status="${s}"
-          onclick="filtrarStatus('${s}', this)">${{ todos:'Todos', disponivel:'Disponíveis', reservado:'Reservados', vendido:'Vendidos' }[s]}</button>
-      `).join('')}
-    </div>
-    <div class="lista-anuncios" id="lista-anuncios-inner">
-      ${renderItemsAnuncios(anunciosAdmin)}
-    </div>
-  `;
-  document.querySelector('[data-status="todos"]').classList.add('ativo');
+    <div class="lista-anuncios">
+      ${!_anuncios.length
+        ? '<p style="color:var(--text-3);padding:40px;text-align:center">Nenhum anúncio ainda. Crie o primeiro!</p>'
+        : _anuncios.map(a => {
+            const lucro  = a.valor_venda - a.valor_pago;
+            const margem = a.valor_venda > 0 ? ((lucro/a.valor_venda)*100).toFixed(0) : 0;
+            const foto   = a.fotos?.[0];
+            return `
+              <div class="item-anuncio">
+                <div class="item-thumb">
+                  ${foto ? `<img src="${fotoUrl(foto)}" alt="">` : (()=>{ const tc={carro:'🚗',imovel:'🏠',moto:'🏍️',celular:'📱',outro:'✨'}; return tc[a.tipo]||'✨'; })()}
+                </div>
+                <div class="item-info">
+                  <div class="item-titulo">${a.titulo}</div>
+                  <div class="item-meta">${a.tipo} · <span class="badge ${statusBadge[a.status]||'badge-cinza'}">${statusLabel[a.status]||a.status}</span></div>
+                </div>
+                <div class="item-valores">
+                  Venda: <strong>${_fmt(a.valor_venda)}</strong><br>
+                  Lucro: <span style="color:${lucro>=0?'var(--success)':'var(--error)'}">${_fmt(lucro)} (${margem}%)</span>
+                </div>
+                <div class="item-acoes">
+                  <button class="btn-acao" onclick="editarAnuncio(${a.id})" title="Editar">✏️</button>
+                  ${a.status!=='vendido'?`<button class="btn-acao btn-venda" onclick="abrirModalVenda(${a.id})" title="Registrar venda">💰</button>`:''}
+                  <button class="btn-acao" onclick="_compartilhar(${a.id})" title="Compartilhar">↗</button>
+                  <button class="btn-acao btn-danger" onclick="excluirAnuncio(${a.id})" title="Excluir">🗑️</button>
+                </div>
+              </div>`;
+          }).join('')}
+    </div>`;
 }
 
-function filtrarStatus(status, btn) {
-  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('ativo'));
-  btn.classList.add('ativo');
-  const lista = status === 'todos' ? anunciosAdmin : anunciosAdmin.filter(a => a.status === status);
-  document.getElementById('lista-anuncios-inner').innerHTML = renderItemsAnuncios(lista);
-}
-
-function renderItemsAnuncios(lista) {
-  if (!lista.length) return '<div class="empty-lista">Nenhum anúncio nesta categoria</div>';
-  return lista.map(a => {
-    const lucro = a.valor_venda - a.valor_pago;
-    const margem = a.valor_venda > 0 ? (lucro / a.valor_venda * 100).toFixed(1) : 0;
-    return `
-      <div class="item-anuncio">
-        <div class="item-foto">
-          <img src="${fotoPrincipal(a.fotos)}" alt="${a.titulo}">
-        </div>
-        <div class="item-info">
-          <div class="item-titulo">${a.titulo}</div>
-          <div class="item-tipo">${a.tipo === 'carro' ? '🚗' : '🏠'} ${a.tipo}</div>
-          <div class="item-financeiro">
-            <span class="fin-label">Pago: <strong>${formatarMoeda(a.valor_pago)}</strong></span>
-            <span class="fin-label">Venda: <strong>${formatarMoeda(a.valor_venda)}</strong></span>
-            <span class="fin-lucro">Lucro: <strong>${formatarMoeda(lucro)}</strong> (${margem}%)</span>
-          </div>
-        </div>
-        <div class="item-status">
-          <span class="status-badge status-${a.status}">${{ disponivel:'Disponível', reservado:'Reservado', vendido:'Vendido' }[a.status]}</span>
-          ${a.destaque ? '<span class="destaque-badge">⭐ Destaque</span>' : ''}
-        </div>
-        <div class="item-acoes">
-          <button onclick="abrirModalAnuncio(${a.id})" title="Editar">✏️</button>
-          ${a.status !== 'vendido' ? `<button onclick="abrirModalVenda(${a.id})" title="Registrar venda" class="btn-venda">💰</button>` : ''}
-          <button onclick="compartilharAdmin(${a.id})" title="Compartilhar">↑</button>
-          <button onclick="confirmarExcluir(${a.id})" title="Excluir" class="btn-danger">🗑</button>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-// ============================================================
-// MODAL DE ANÚNCIO (criar / editar)
-// ============================================================
-function abrirModalAnuncio(id = null) {
-  const anuncio = id ? anunciosAdmin.find(a => a.id === id) : null;
-  const titulo = anuncio ? 'Editar anúncio' : 'Novo anúncio';
-  const tipo = anuncio?.tipo || 'carro';
-
-  const modal = criarModal(`
-    <div class="modal-header">
-      <h3>${titulo}</h3>
-      <button class="modal-fechar" onclick="fecharModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <!-- Tipo -->
-      <div class="campo-grupo">
-        <label>Tipo</label>
-        <div class="tipo-toggle">
-          <button id="btn-carro" class="tipo-btn ${tipo === 'carro' ? 'ativo' : ''}" onclick="setTipo('carro')">🚗 Carro</button>
-          <button id="btn-imovel" class="tipo-btn ${tipo === 'imovel' ? 'ativo' : ''}" onclick="setTipo('imovel')">🏠 Imóvel</button>
-        </div>
-      </div>
-
-      <!-- Comum -->
-      <div class="campos-comuns">
-        <div class="campo-grupo">
-          <label>Título *</label>
-          <input id="f-titulo" type="text" value="${anuncio?.titulo || ''}" placeholder="Ex: Honda Civic 2020 ou Apto 2 quartos Bairro X">
-        </div>
-        <div class="campo-row">
-          <div class="campo-grupo">
-            <label>Valor pago (privado) *</label>
-            <input id="f-valor-pago" type="number" step="0.01" value="${anuncio?.valor_pago || ''}" placeholder="0,00" oninput="calcularLucroModal()">
-          </div>
-          <div class="campo-grupo">
-            <label>Valor de venda *</label>
-            <input id="f-valor-venda" type="number" step="0.01" value="${anuncio?.valor_venda || ''}" placeholder="0,00" oninput="calcularLucroModal()">
-          </div>
-        </div>
-        <div id="calculo-lucro" class="calculo-lucro"></div>
-
-        <div class="campo-grupo">
-          <label>Status</label>
-          <select id="f-status">
-            <option value="disponivel" ${anuncio?.status === 'disponivel' ? 'selected' : ''}>Disponível</option>
-            <option value="reservado"  ${anuncio?.status === 'reservado'  ? 'selected' : ''}>Reservado</option>
-            <option value="vendido"    ${anuncio?.status === 'vendido'    ? 'selected' : ''}>Vendido</option>
-          </select>
-        </div>
-
-        <div class="campo-grupo campo-check">
-          <label><input id="f-destaque" type="checkbox" ${anuncio?.destaque ? 'checked' : ''}> ⭐ Destacar anúncio (aparece no carrossel)</label>
-        </div>
-      </div>
-
-      <!-- Campos carro -->
-      <div id="campos-carro" style="display:${tipo === 'carro' ? '' : 'none'}">
-        <div class="secao-label">Dados do veículo</div>
-        <div class="campo-row">
-          <div class="campo-grupo"><label>Marca</label><input id="f-marca" value="${anuncio?.marca || ''}" placeholder="Honda"></div>
-          <div class="campo-grupo"><label>Modelo</label><input id="f-modelo" value="${anuncio?.modelo || ''}" placeholder="Civic"></div>
-        </div>
-        <div class="campo-row">
-          <div class="campo-grupo"><label>Ano</label><input id="f-ano" type="number" value="${anuncio?.ano || ''}" placeholder="2020"></div>
-          <div class="campo-grupo"><label>KM</label><input id="f-km" type="number" value="${anuncio?.km || ''}" placeholder="45000"></div>
-        </div>
-        <div class="campo-row">
-          <div class="campo-grupo"><label>Cor</label><input id="f-cor" value="${anuncio?.cor || ''}" placeholder="Preto"></div>
-          <div class="campo-grupo">
-            <label>Câmbio</label>
-            <select id="f-cambio">
-              <option value="">—</option>
-              ${['Manual','Automático','CVT','Semi-automático'].map(c => `<option ${anuncio?.cambio === c ? 'selected' : ''}>${c}</option>`).join('')}
-            </select>
-          </div>
-        </div>
-        <div class="campo-grupo">
-          <label>Combustível</label>
-          <select id="f-combustivel">
-            <option value="">—</option>
-            ${['Flex','Gasolina','Diesel','Elétrico','Híbrido'].map(c => `<option ${anuncio?.combustivel === c ? 'selected' : ''}>${c}</option>`).join('')}
-          </select>
-        </div>
-      </div>
-
-      <!-- Campos imóvel -->
-      <div id="campos-imovel" style="display:${tipo === 'imovel' ? '' : 'none'}">
-        <div class="secao-label">Dados do imóvel</div>
-        <div class="campo-row">
-          <div class="campo-grupo"><label>Cidade</label><input id="f-cidade" value="${anuncio?.cidade || ''}"></div>
-          <div class="campo-grupo"><label>Bairro</label><input id="f-bairro" value="${anuncio?.bairro || ''}"></div>
-        </div>
-        <div class="campo-row">
-          <div class="campo-grupo"><label>Área (m²)</label><input id="f-area" type="number" step="0.1" value="${anuncio?.area_m2 || ''}"></div>
-          <div class="campo-grupo"><label>Quartos</label><input id="f-quartos" type="number" value="${anuncio?.quartos || ''}"></div>
-        </div>
-        <div class="campo-row">
-          <div class="campo-grupo"><label>Vagas</label><input id="f-vagas" type="number" value="${anuncio?.vagas || ''}"></div>
-          <div class="campo-grupo">
-            <label>Tipo</label>
-            <select id="f-tipo-imovel">
-              <option value="">—</option>
-              ${['Casa','Apartamento','Terreno','Comercial'].map(t => `<option ${anuncio?.tipo_imovel === t ? 'selected' : ''}>${t}</option>`).join('')}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- Descrição -->
-      <div class="campo-grupo">
-        <label>Descrição</label>
-        <textarea id="f-descricao" rows="4" placeholder="Detalhes extras, estado de conservação, diferenciais...">${anuncio?.descricao || ''}</textarea>
-      </div>
-
-      <!-- Upload de fotos -->
-      <div class="campo-grupo">
-        <label>Fotos</label>
-        <div class="upload-area" id="upload-area" onclick="document.getElementById('input-fotos').click()">
-          <input type="file" id="input-fotos" accept="image/*" multiple style="display:none" onchange="handleFotos(event)">
-          <div class="upload-icon">📷</div>
-          <div>Clique para adicionar fotos</div>
-          <div style="font-size:12px;color:var(--text-3)">JPG, PNG, WebP · Primeira = capa</div>
-        </div>
-        <div class="fotos-preview" id="fotos-preview">
-          ${(anuncio?.fotos || []).map((f, i) => `
-            <div class="foto-thumb">
-              <img src="${f}">
-              ${i === 0 ? '<span class="foto-capa">Capa</span>' : ''}
-              <button class="foto-remove" onclick="removerFoto(${i})">✕</button>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="fecharModal()">Cancelar</button>
-      <button class="btn-primary" onclick="salvarAnuncio(${id || 'null'})">
-        ${anuncio ? 'Salvar alterações' : 'Publicar anúncio'}
-      </button>
-    </div>
-  `);
-
-  // Estado de fotos no modal
-  modal._fotos = anuncio?.fotos ? [...anuncio.fotos] : [];
-  modal._tipo = tipo;
-  calcularLucroModal();
-}
-
-let _fotosPendentes = [];
-let _fotosExistentes = [];
-
-function setTipo(tipo) {
-  document.getElementById('btn-carro').classList.toggle('ativo', tipo === 'carro');
-  document.getElementById('btn-imovel').classList.toggle('ativo', tipo === 'imovel');
-  document.getElementById('campos-carro').style.display = tipo === 'carro' ? '' : 'none';
-  document.getElementById('campos-imovel').style.display = tipo === 'imovel' ? '' : 'none';
-  document.querySelector('.kjs-modal')._tipo = tipo;
-}
-
-function calcularLucroModal() {
-  const pago = parseFloat(document.getElementById('f-valor-pago')?.value) || 0;
-  const venda = parseFloat(document.getElementById('f-valor-venda')?.value) || 0;
-  const lucro = venda - pago;
-  const margem = venda > 0 ? (lucro / venda * 100).toFixed(1) : 0;
-  const el = document.getElementById('calculo-lucro');
-  if (!el) return;
-  const cor = lucro >= 0 ? 'var(--success)' : 'var(--error)';
-  el.innerHTML = `<span style="color:${cor}">Lucro: <strong>${formatarMoeda(lucro)}</strong> · Margem: <strong>${margem}%</strong></span>`;
-}
-
-async function handleFotos(event) {
-  const files = Array.from(event.target.files);
-  const preview = document.getElementById('fotos-preview');
-  preview.innerHTML += files.map((_, i) => `<div class="foto-thumb loading" id="thumb-loading-${i}"><div class="skeleton" style="width:100%;height:100%"></div></div>`).join('');
-
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const ext = file.name.split('.').pop();
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { data, error } = await supabase.storage.from('kjs-fotos').upload(path, file, { upsert: false });
-    if (error) { toast(`Erro ao enviar foto: ${error.message}`, 'error'); continue; }
-    const { data: { publicUrl } } = supabase.storage.from('kjs-fotos').getPublicUrl(data.path);
-    _fotosExistentes.push(publicUrl);
-    document.getElementById(`thumb-loading-${i}`)?.remove();
-    adicionarThumb(publicUrl, _fotosExistentes.length - 1);
-  }
-}
-
-function adicionarThumb(url, idx) {
-  const preview = document.getElementById('fotos-preview');
-  const div = document.createElement('div');
-  div.className = 'foto-thumb';
-  div.innerHTML = `<img src="${url}">${idx === 0 ? '<span class="foto-capa">Capa</span>' : ''}<button class="foto-remove" onclick="removerFoto(${idx})">✕</button>`;
-  preview.appendChild(div);
-}
-
-function removerFoto(idx) {
-  _fotosExistentes.splice(idx, 1);
-  // Re-render thumbs
-  const preview = document.getElementById('fotos-preview');
-  preview.innerHTML = _fotosExistentes.map((f, i) => `
-    <div class="foto-thumb">
-      <img src="${f}">
-      ${i === 0 ? '<span class="foto-capa">Capa</span>' : ''}
-      <button class="foto-remove" onclick="removerFoto(${i})">✕</button>
-    </div>
-  `).join('');
-}
-
-async function salvarAnuncio(id) {
-  const modal = document.querySelector('.kjs-modal');
-  const tipo = modal?._tipo || 'carro';
-
-  const payload = {
-    tipo,
-    titulo: document.getElementById('f-titulo').value.trim(),
-    valor_pago: parseFloat(document.getElementById('f-valor-pago').value) || 0,
-    valor_venda: parseFloat(document.getElementById('f-valor-venda').value) || 0,
-    status: document.getElementById('f-status').value,
-    destaque: document.getElementById('f-destaque').checked,
-    descricao: document.getElementById('f-descricao').value.trim(),
-    fotos: _fotosExistentes,
-    ...(tipo === 'carro' ? {
-      marca: document.getElementById('f-marca').value.trim(),
-      modelo: document.getElementById('f-modelo').value.trim(),
-      ano: parseInt(document.getElementById('f-ano').value) || null,
-      km: parseInt(document.getElementById('f-km').value) || null,
-      cor: document.getElementById('f-cor').value.trim(),
-      cambio: document.getElementById('f-cambio').value,
-      combustivel: document.getElementById('f-combustivel').value
-    } : {
-      cidade: document.getElementById('f-cidade').value.trim(),
-      bairro: document.getElementById('f-bairro').value.trim(),
-      area_m2: parseFloat(document.getElementById('f-area').value) || null,
-      quartos: parseInt(document.getElementById('f-quartos').value) || null,
-      vagas: parseInt(document.getElementById('f-vagas').value) || null,
-      tipo_imovel: document.getElementById('f-tipo-imovel').value
-    })
-  };
-
-  if (!payload.titulo) { toast('Título é obrigatório', 'error'); return; }
-  if (!payload.valor_venda) { toast('Valor de venda é obrigatório', 'error'); return; }
-
-  const btn = document.querySelector('.modal-footer .btn-primary');
-  btn.textContent = 'Salvando...'; btn.disabled = true;
-
-  let error;
-  if (id) {
-    ({ error } = await supabase.from('anuncios').update(payload).eq('id', id));
-  } else {
-    ({ error } = await supabase.from('anuncios').insert(payload));
-  }
-
-  if (error) { toast('Erro ao salvar: ' + error.message, 'error'); btn.textContent = 'Salvar'; btn.disabled = false; return; }
-  toast(id ? 'Anúncio atualizado!' : 'Anúncio publicado!');
-  fecharModal();
-  _fotosExistentes = [];
-  await carregarTudo();
-  irAba('anuncios');
-}
-
-// ============================================================
-// MODAL DE VENDA
-// ============================================================
-function abrirModalVenda(anuncioId) {
-  const anuncio = anunciosAdmin.find(a => a.id === anuncioId);
-  if (!anuncio) return;
-
-  criarModal(`
-    <div class="modal-header">
-      <h3>Registrar venda</h3>
-      <button class="modal-fechar" onclick="fecharModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="venda-anuncio-info">
-        <strong>${anuncio.titulo}</strong>
-        <span>Valor anunciado: ${formatarMoeda(anuncio.valor_venda)}</span>
-      </div>
-
-      <div class="campo-grupo">
-        <label>Valor final negociado *</label>
-        <input id="v-valor" type="number" step="0.01" value="${anuncio.valor_venda}" placeholder="0,00">
-      </div>
-
-      <div class="campo-grupo">
-        <label>Forma de pagamento *</label>
-        <div class="forma-pgto-options">
-          ${[['pix','PIX'],['debito','Débito'],['credito_maquininha','Crédito parcelado']].map(([val, label]) => `
-            <label class="forma-option">
-              <input type="radio" name="forma-pgto" value="${val}" ${val === 'pix' ? 'checked' : ''} onchange="toggleParcelas()">
-              ${label}
-            </label>
-          `).join('')}
-        </div>
-      </div>
-
-      <div id="campo-parcelas" style="display:none" class="campo-grupo">
-        <label>Número de parcelas</label>
-        <select id="v-parcelas">
-          ${[2,3,4,5,6,10,12,18,24].map(n => `<option value="${n}">${n}x</option>`).join('')}
-        </select>
-      </div>
-
-      <div class="campo-grupo">
-        <label>Nome do comprador (opcional)</label>
-        <input id="v-nome" type="text" placeholder="João Silva">
-      </div>
-      <div class="campo-grupo">
-        <label>WhatsApp do comprador (opcional)</label>
-        <input id="v-tel" type="tel" placeholder="11999999999">
-      </div>
-      <div class="campo-grupo">
-        <label>Observações</label>
-        <textarea id="v-obs" rows="3" placeholder="Anotações sobre a negociação..."></textarea>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="fecharModal()">Cancelar</button>
-      <button class="btn-primary" onclick="confirmarVenda(${anuncioId})">✅ Registrar venda</button>
-    </div>
-  `);
-}
-
-function toggleParcelas() {
-  const forma = document.querySelector('input[name="forma-pgto"]:checked')?.value;
-  document.getElementById('campo-parcelas').style.display = forma === 'credito_maquininha' ? '' : 'none';
-}
-
-async function confirmarVenda(anuncioId) {
-  const valor = parseFloat(document.getElementById('v-valor').value);
-  const forma = document.querySelector('input[name="forma-pgto"]:checked')?.value;
-  const parcelas = forma === 'credito_maquininha'
-    ? parseInt(document.getElementById('v-parcelas').value)
-    : 1;
-
-  if (!valor || !forma) { toast('Preencha valor e forma de pagamento', 'error'); return; }
-
-  const btn = document.querySelector('.modal-footer .btn-primary');
-  btn.textContent = 'Salvando...'; btn.disabled = true;
-
-  const { error: eVenda } = await supabase.from('vendas').insert({
-    anuncio_id: anuncioId,
-    valor_final: valor,
-    forma_pgto: forma,
-    parcelas,
-    comprador_nome: document.getElementById('v-nome').value.trim() || null,
-    comprador_tel: document.getElementById('v-tel').value.trim() || null,
-    observacoes: document.getElementById('v-obs').value.trim() || null
-  });
-
-  if (eVenda) { toast('Erro: ' + eVenda.message, 'error'); return; }
-
-  await supabase.from('anuncios').update({ status: 'vendido' }).eq('id', anuncioId);
-  toast('Venda registrada! 🎉');
-  fecharModal();
-  await carregarTudo();
-  renderDashboard();
-}
-
-// ============================================================
-// LISTA DE VENDAS
-// ============================================================
+// ── Lista Vendas ──────────────────────────────────────────
 function renderListaVendas() {
   const el = document.getElementById('aba-vendas');
-  if (!el) return;
+  const pgtoLabel = { pix:'PIX', debito:'Débito', credito_maquininha:'Crédito' };
   el.innerHTML = `
-    <h2>Histórico de vendas</h2>
+    <div class="page-header"><h2>Vendas realizadas</h2></div>
     <div class="lista-vendas">
-      ${!vendasAdmin.length ? '<div class="empty-lista">Nenhuma venda registrada ainda</div>' :
-        vendasAdmin.map(v => {
-          const custo = v.anuncios?.valor_pago || 0;
-          const lucro = v.valor_final - custo;
-          return `
-            <div class="item-venda">
-              <div class="venda-info">
-                <div class="venda-titulo">${v.anuncios?.titulo || 'Anúncio removido'}</div>
-                <div class="venda-data">${formatarData(v.vendido_em)}</div>
-                ${v.comprador_nome ? `<div class="venda-comprador">👤 ${v.comprador_nome}${v.comprador_tel ? ` · ${v.comprador_tel}` : ''}</div>` : ''}
-              </div>
-              <div class="venda-pgto">
-                <span class="pgto-badge">${FORMAS_LABEL[v.forma_pgto] || v.forma_pgto}</span>
-                ${v.parcelas > 1 ? `<span class="pgto-badge">${v.parcelas}x</span>` : ''}
-              </div>
-              <div class="venda-valores">
-                <div>Venda: <strong>${formatarMoeda(v.valor_final)}</strong></div>
-                <div class="${lucro >= 0 ? 'text-success' : 'text-error'}">Lucro: <strong>${formatarMoeda(lucro)}</strong></div>
-              </div>
-            </div>
-          `;
-        }).join('')
-      }
-    </div>
-  `;
+      ${!_vendas.length
+        ? '<p style="color:var(--text-3);padding:40px;text-align:center">Nenhuma venda registrada ainda.</p>'
+        : _vendas.map(v => {
+            const a = _anuncios.find(x=>x.id===v.anuncio_id);
+            const lucro = v.valor_final - (a?.valor_pago||0);
+            const tc = {carro:'🚗',imovel:'🏠',moto:'🏍️',celular:'📱',outro:'✨'};
+            return `
+              <div class="item-venda">
+                <div class="venda-emoji">${tc[a?.tipo]||'✨'}</div>
+                <div class="venda-info">
+                  <div class="venda-titulo">${a?.titulo||'Produto vendido'}</div>
+                  <div class="venda-meta">${formatarData(v.vendido_em)} · ${pgtoLabel[v.forma_pgto]||v.forma_pgto}${v.parcelas>1?' ('+v.parcelas+'x)':''}</div>
+                  ${v.comprador_nome?`<div class="venda-meta">Comprador: ${v.comprador_nome}</div>`:''}
+                </div>
+                <div class="venda-valores">
+                  <strong>${_fmt(v.valor_final)}</strong>
+                  Lucro: <span style="color:var(--success)">${_fmt(lucro)}</span>
+                </div>
+              </div>`;
+          }).join('')}
+    </div>`;
 }
 
-// ============================================================
-// CONFIG
-// ============================================================
-function renderConfig() {
-  const c = KJS_CONFIG || {};
-  document.getElementById('aba-config').innerHTML = `
-    <h2>Configurações</h2>
+// ── Config ────────────────────────────────────────────────
+async function renderConfig() {
+  const el = document.getElementById('aba-config');
+  const { data: cfg } = await _db.from('config').select('*').eq('id',1).single();
+  el.innerHTML = `
+    <div class="page-header"><h2>Configurações</h2></div>
+    <div class="config-section-title">Dados do perfil</div>
     <div class="config-form">
-      <div class="campo-grupo"><label>Nome de exibição</label><input id="c-nome" value="${c.nome_exibicao || ''}"></div>
-      <div class="campo-grupo"><label>WhatsApp (com DDD, sem +55)</label><input id="c-wpp" type="tel" value="${c.whatsapp || ''}" placeholder="11999999999"></div>
-      <div class="campo-grupo"><label>Instagram (sem @)</label><input id="c-ig" value="${c.instagram || ''}" placeholder="kjsbusiness"></div>
-      <div class="campo-grupo"><label>Bio / apresentação</label><textarea id="c-bio" rows="3">${c.bio || ''}</textarea></div>
-      <div class="campo-grupo"><label>Total de negócios realizados (exibido na vitrine)</label><input id="c-negocios" type="number" value="${c.total_negocios || 0}"></div>
-      <button class="btn-primary" onclick="salvarConfig()">Salvar configurações</button>
+      <div class="campo-grupo"><label>Nome de exibição</label>
+        <input type="text" id="cfg-nome" class="form-input" value="${cfg?.nome_exibicao||''}">
+      </div>
+      <div class="campo-grupo"><label>WhatsApp (apenas números com DDI)</label>
+        <input type="text" id="cfg-wpp" class="form-input" value="${cfg?.whatsapp||''}" placeholder="5511999999999">
+      </div>
+      <div class="campo-grupo"><label>Instagram (sem @)</label>
+        <input type="text" id="cfg-ig" class="form-input" value="${cfg?.instagram||''}" placeholder="kjs.business">
+      </div>
+      <div class="campo-grupo"><label>Bio (exibida na vitrine)</label>
+        <textarea id="cfg-bio" class="form-textarea">${cfg?.bio||''}</textarea>
+      </div>
+      <button class="btn-primary" onclick="salvarConfig()" style="width:fit-content">Salvar configurações</button>
     </div>
-    <div class="config-section">
-      <button class="btn-danger-full" onclick="logout()">Sair do painel</button>
-    </div>
-  `;
+    <div class="config-section-title">Alterar senha do painel</div>
+    <div class="config-form">
+      <div class="campo-grupo"><label>Nova senha</label>
+        <input type="password" id="cfg-senha" class="form-input" placeholder="••••••••">
+      </div>
+      <div class="campo-grupo"><label>Confirmar nova senha</label>
+        <input type="password" id="cfg-senha2" class="form-input" placeholder="••••••••">
+      </div>
+      <button class="btn-primary" onclick="alterarSenha()" style="width:fit-content">Alterar senha</button>
+    </div>`;
 }
 
 async function salvarConfig() {
-  const { error } = await supabase.from('config').update({
-    nome_exibicao: document.getElementById('c-nome').value.trim(),
-    whatsapp: document.getElementById('c-wpp').value.trim(),
-    instagram: document.getElementById('c-ig').value.trim(),
-    bio: document.getElementById('c-bio').value.trim(),
-    total_negocios: parseInt(document.getElementById('c-negocios').value) || 0
-  }).eq('id', 1);
-
-  if (error) { toast('Erro: ' + error.message, 'error'); return; }
-  toast('Configurações salvas!');
-  await loadConfig();
+  const payload = {
+    nome_exibicao: document.getElementById('cfg-nome').value.trim(),
+    whatsapp:      document.getElementById('cfg-wpp').value.trim().replace(/\D/g,''),
+    instagram:     document.getElementById('cfg-ig').value.trim().replace('@',''),
+    bio:           document.getElementById('cfg-bio').value.trim()
+  };
+  const { error } = await _db.from('config').update(payload).eq('id',1);
+  if (error) { _toast('Erro ao salvar.','erro'); return; }
+  _toast('Configurações salvas!');
 }
 
-// ============================================================
-// HELPERS: MODAL, EXCLUIR, COMPARTILHAR
-// ============================================================
-function criarModal(html) {
-  fecharModal();
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.onclick = e => { if (e.target === overlay) fecharModal(); };
-  const modal = document.createElement('div');
-  modal.className = 'kjs-modal';
-  modal.innerHTML = html;
-  overlay.appendChild(modal);
-  document.body.appendChild(overlay);
-  _fotosExistentes = [];
-  return modal;
+async function alterarSenha() {
+  const s1 = document.getElementById('cfg-senha').value;
+  const s2 = document.getElementById('cfg-senha2').value;
+  if (!s1) { _toast('Digite a nova senha.','erro'); return; }
+  if (s1 !== s2) { _toast('Senhas não coincidem.','erro'); return; }
+  const { error } = await _db.rpc('kjs_alterar_senha', { p_nova: s1 });
+  if (error) { _toast('Erro ao alterar senha.','erro'); return; }
+  _toast('Senha alterada com sucesso!');
+  document.getElementById('cfg-senha').value = '';
+  document.getElementById('cfg-senha2').value = '';
 }
 
-function fecharModal() {
-  document.querySelector('.modal-overlay')?.remove();
-  _fotosExistentes = [];
+// ── Abas ──────────────────────────────────────────────────
+function irAba(aba) {
+  document.querySelectorAll('.aba-content').forEach(el => el.style.display = 'none');
+  document.getElementById('aba-' + aba).style.display = '';
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('ativo', el.dataset.aba === aba));
 }
 
-async function confirmarExcluir(id) {
-  if (!confirm('Excluir este anúncio? Esta ação não pode ser desfeita.')) return;
-  const { error } = await supabase.from('anuncios').delete().eq('id', id);
-  if (error) { toast('Erro: ' + error.message, 'error'); return; }
-  toast('Anúncio excluído');
-  await carregarTudo();
-  irAba('anuncios');
+// ── Modal Anúncio ─────────────────────────────────────────
+function novoAnuncio() {
+  _editId = null; _fotosUpload = [];
+  document.getElementById('modal-anuncio-titulo').textContent = 'Novo anúncio';
+  document.getElementById('modal-anuncio').querySelector('.modal-body form, .modal-body')
+  // Reset form fields
+  ;['f-titulo','f-descricao','f-valor-pago','f-valor-venda','f-marca','f-modelo',
+    'f-ano','f-km','f-cor','f-cidade','f-bairro','f-area','f-quartos','f-vagas']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('f-cambio').value = '';
+  document.getElementById('f-combustivel').value = '';
+  document.getElementById('f-status').value = 'disponivel';
+  document.getElementById('f-destaque').checked = false;
+  document.getElementById('f-pix').checked = true;
+  document.getElementById('f-debito').checked = true;
+  document.getElementById('f-credito').checked = true;
+  document.getElementById('preview-fotos').innerHTML = '';
+  document.getElementById('calculo-lucro').innerHTML = '';
+  setTipoModal('carro');
+  abrirModal('modal-anuncio');
 }
 
-function compartilharAdmin(id) {
+function editarAnuncio(id) {
+  const a = _anuncios.find(x => x.id === id);
+  if (!a) return;
+  _editId = id; _fotosUpload = a.fotos || [];
+  document.getElementById('modal-anuncio-titulo').textContent = 'Editar anúncio';
+  const sv = (elId, v) => { const el = document.getElementById(elId); if (el) el.value = v||''; };
+  sv('f-titulo', a.titulo); sv('f-descricao', a.descricao);
+  sv('f-valor-pago', a.valor_pago); sv('f-valor-venda', a.valor_venda);
+  sv('f-status', a.status);
+  document.getElementById('f-destaque').checked = !!a.destaque;
+  document.getElementById('f-pix').checked    = !!a.aceita_pix;
+  document.getElementById('f-debito').checked  = !!a.aceita_debito;
+  document.getElementById('f-credito').checked = !!a.aceita_credito;
+  setTipoModal(a.tipo || 'carro');
+  if (a.tipo === 'carro' || a.tipo === 'moto') {
+    sv('f-marca',a.marca); sv('f-modelo',a.modelo); sv('f-ano',a.ano);
+    sv('f-km',a.km); sv('f-cor',a.cor); sv('f-cambio',a.cambio); sv('f-combustivel',a.combustivel);
+  } else if (a.tipo === 'imovel') {
+    sv('f-cidade',a.cidade); sv('f-bairro',a.bairro); sv('f-area',a.area_m2);
+    sv('f-quartos',a.quartos); sv('f-vagas',a.vagas);
+    document.getElementById('f-tipo-imovel').value = a.tipo_imovel||'';
+  }
+  renderPreviewFotos();
+  calcularLucro();
+  abrirModal('modal-anuncio');
+}
+
+function setTipoModal(tipo) {
+  document.getElementById('f-tipo').value = tipo;
+  const ehCarro  = tipo === 'carro' || tipo === 'moto';
+  const ehImovel = tipo === 'imovel';
+  document.getElementById('campos-carro').style.display  = ehCarro  ? '' : 'none';
+  document.getElementById('campos-imovel').style.display = ehImovel ? '' : 'none';
+  document.querySelectorAll('.btn-tipo').forEach(b => b.classList.toggle('ativo', b.dataset.tipo === tipo));
+}
+
+function calcularLucro() {
+  const pago  = parseFloat(document.getElementById('f-valor-pago')?.value) || 0;
+  const venda = parseFloat(document.getElementById('f-valor-venda')?.value) || 0;
+  const lucro = venda - pago;
+  const m     = venda > 0 ? (lucro/venda*100).toFixed(1) : 0;
+  const el    = document.getElementById('calculo-lucro');
+  if (!el) return;
+  el.innerHTML = pago || venda
+    ? `Lucro: <strong style="color:${lucro>=0?'var(--success)':'var(--error)'}">${_fmt(lucro)}</strong> · Margem: <strong>${m}%</strong>`
+    : '';
+}
+
+// ── Fotos ─────────────────────────────────────────────────
+function onFotosChange(evt) {
+  Array.from(evt.target.files).forEach(f => _fotosUpload.push({ file:f, url:URL.createObjectURL(f) }));
+  renderPreviewFotos();
+}
+
+function renderPreviewFotos() {
+  const prev = document.getElementById('preview-fotos');
+  if (!prev) return;
+  prev.innerHTML = _fotosUpload.map((f, i) => {
+    const url = f.url || fotoUrl(f);
+    return `<div class="preview-foto">
+      <img src="${url}" alt="">
+      ${i===0 ? '<span class="foto-capa">Capa</span>' : ''}
+      <button class="foto-rm" onclick="removerFoto(${i})">×</button>
+    </div>`;
+  }).join('');
+}
+
+function removerFoto(idx) { _fotosUpload.splice(idx,1); renderPreviewFotos(); }
+
+async function _uploadFotos() {
+  const paths = [];
+  for (const f of _fotosUpload) {
+    if (f.file) {
+      const ext  = f.file.name.split('.').pop();
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await _db.storage.from('fotos-kjs').upload(path, f.file, { upsert: true });
+      if (!error) paths.push(path);
+    } else {
+      paths.push(f);
+    }
+  }
+  return paths;
+}
+
+async function salvarAnuncio() {
+  const btn = document.getElementById('btn-salvar-anuncio');
+  btn.textContent = 'Salvando…'; btn.disabled = true;
+  try {
+    const fotos = await _uploadFotos();
+    const tipo  = document.getElementById('f-tipo').value;
+    const payload = {
+      tipo, fotos,
+      titulo:        document.getElementById('f-titulo').value.trim(),
+      descricao:     document.getElementById('f-descricao').value.trim(),
+      valor_pago:    parseFloat(document.getElementById('f-valor-pago').value) || 0,
+      valor_venda:   parseFloat(document.getElementById('f-valor-venda').value) || 0,
+      status:        document.getElementById('f-status').value,
+      destaque:      document.getElementById('f-destaque').checked,
+      aceita_pix:    document.getElementById('f-pix').checked,
+      aceita_debito: document.getElementById('f-debito').checked,
+      aceita_credito:document.getElementById('f-credito').checked,
+    };
+    if (tipo === 'carro' || tipo === 'moto') {
+      Object.assign(payload, {
+        marca: document.getElementById('f-marca').value,
+        modelo: document.getElementById('f-modelo').value,
+        ano: parseInt(document.getElementById('f-ano').value)||null,
+        km:  parseInt(document.getElementById('f-km').value)||null,
+        cor: document.getElementById('f-cor').value,
+        cambio: document.getElementById('f-cambio').value,
+        combustivel: document.getElementById('f-combustivel').value,
+      });
+    } else if (tipo === 'imovel') {
+      Object.assign(payload, {
+        cidade: document.getElementById('f-cidade').value,
+        bairro: document.getElementById('f-bairro').value,
+        area_m2: parseFloat(document.getElementById('f-area').value)||null,
+        quartos: parseInt(document.getElementById('f-quartos').value)||null,
+        vagas:   parseInt(document.getElementById('f-vagas').value)||null,
+        tipo_imovel: document.getElementById('f-tipo-imovel').value,
+      });
+    }
+    if (_editId) payload.id = _editId;
+    const { error } = await _db.rpc('kjs_admin_upsert_anuncio', { p_data: payload });
+    if (error) throw error;
+    _toast(_editId ? 'Anúncio atualizado!' : 'Anúncio criado!');
+    fecharModal('modal-anuncio');
+    await carregarDados();
+  } catch(e) { _toast('Erro: ' + e.message, 'erro'); }
+  finally { btn.textContent = 'Salvar anúncio'; btn.disabled = false; }
+}
+
+async function excluirAnuncio(id) {
+  if (!confirm('Excluir este anúncio? Essa ação não pode ser desfeita.')) return;
+  const { error } = await _db.rpc('kjs_admin_delete_anuncio', { p_id: id });
+  if (error) { _toast('Erro ao excluir.','erro'); return; }
+  _toast('Anúncio excluído.');
+  await carregarDados();
+}
+
+function _compartilhar(id) {
   const url = `${location.origin}/anuncio.html?id=${id}`;
-  navigator.clipboard.writeText(url).then(() => toast('Link copiado!'));
+  if (navigator.share) { navigator.share({ url }); }
+  else { navigator.clipboard.writeText(url); _toast('Link copiado!'); }
 }
+
+// ── Modal Venda ───────────────────────────────────────────
+function abrirModalVenda(id) {
+  _vendaId = id;
+  const a = _anuncios.find(x => x.id === id);
+  document.getElementById('venda-anuncio-nome').textContent = a?.titulo || '';
+  document.getElementById('venda-valor').value    = a?.valor_venda || '';
+  document.getElementById('venda-forma').value    = 'pix';
+  document.getElementById('venda-parcelas-row').style.display = 'none';
+  document.getElementById('venda-parcelas').value = '1';
+  document.getElementById('venda-comprador').value = '';
+  document.getElementById('venda-tel').value       = '';
+  document.getElementById('venda-obs').value       = '';
+  abrirModal('modal-venda');
+}
+
+function onFormaPgto(sel) {
+  document.getElementById('venda-parcelas-row').style.display = sel.value === 'credito_maquininha' ? '' : 'none';
+}
+
+async function registrarVenda() {
+  const btn = document.getElementById('btn-registrar-venda');
+  btn.textContent = 'Registrando…'; btn.disabled = true;
+  try {
+    const forma = document.getElementById('venda-forma').value;
+    const payload = {
+      anuncio_id:     _vendaId,
+      valor_final:    parseFloat(document.getElementById('venda-valor').value) || 0,
+      forma_pgto:     forma,
+      parcelas:       forma === 'credito_maquininha' ? parseInt(document.getElementById('venda-parcelas').value)||1 : 1,
+      comprador_nome: document.getElementById('venda-comprador').value.trim(),
+      comprador_tel:  document.getElementById('venda-tel').value.trim(),
+      observacoes:    document.getElementById('venda-obs').value.trim()
+    };
+    const { error } = await _db.rpc('kjs_admin_registrar_venda', { p_data: payload });
+    if (error) throw error;
+    _toast('Venda registrada! 🎉');
+    fecharModal('modal-venda');
+    await carregarDados();
+  } catch(e) { _toast('Erro: ' + e.message, 'erro'); }
+  finally { btn.textContent = 'Registrar venda'; btn.disabled = false; }
+}
+
+// ── Modais ────────────────────────────────────────────────
+function abrirModal(id)  { document.getElementById(id).classList.add('aberto'); }
+function fecharModal(id) { document.getElementById(id).classList.remove('aberto'); }
+
+// ── Helpers ───────────────────────────────────────────────
+function _fmt(v) { return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0}).format(v||0); }
+
+function _toast(msg, tipo = 'ok') {
+  if (typeof toast === 'function') { toast(msg, tipo); return; }
+  let el = document.getElementById('kjs-toast');
+  if (!el) {
+    el = document.createElement('div'); el.id = 'kjs-toast';
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#1A1A1A;color:#fff;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:9999;transition:transform .3s,opacity .3s;border-left:3px solid #D4A017;pointer-events:none;white-space:nowrap;font-family:sans-serif;';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.borderLeftColor = tipo === 'erro' ? '#EF4444' : '#D4A017';
+  el.style.transform = 'translateX(-50%) translateY(0)';
+  el.style.opacity = '1';
+  setTimeout(() => { el.style.transform = 'translateX(-50%) translateY(80px)'; el.style.opacity = '0'; }, 3000);
+}
+
+// ── Init ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (_sessaoOk()) {
+    mostrarPainel();
+  }
+  // form-login submit
+  const form = document.getElementById('form-login');
+  if (form) form.addEventListener('submit', fazerLogin);
+});
