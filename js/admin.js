@@ -310,6 +310,7 @@ function novoAnuncio() {
   document.getElementById('calculo-lucro').innerHTML = '';
   setTipoModal('carro');
   abrirModal('modal-anuncio');
+  setTimeout(_bindFotosInput, 50);
 }
 
 function editarAnuncio(id) {
@@ -337,6 +338,7 @@ function editarAnuncio(id) {
   renderPreviewFotos();
   calcularLucro();
   abrirModal('modal-anuncio');
+  setTimeout(_bindFotosInput, 50);
 }
 
 function setTipoModal(tipo) {
@@ -361,25 +363,53 @@ function calcularLucro() {
 }
 
 // ── Fotos ─────────────────────────────────────────────────
+function _bindFotosInput() {
+  const input = document.getElementById('f-fotos');
+  if (!input || input._bound) return;
+  input._bound = true;
+  input.addEventListener('change', function(evt) {
+    const files = Array.from(evt.target.files || []);
+    files.forEach(f => _fotosUpload.push({ file: f, url: URL.createObjectURL(f) }));
+    renderPreviewFotos();
+    // Limpar o value para permitir selecionar o mesmo arquivo de novo
+    evt.target.value = '';
+  });
+}
+
 function onFotosChange(evt) {
-  Array.from(evt.target.files).forEach(f => _fotosUpload.push({ file:f, url:URL.createObjectURL(f) }));
+  // Fallback inline — não deve ser mais necessário mas mantemos
+  Array.from(evt.target.files || []).forEach(f => _fotosUpload.push({ file:f, url:URL.createObjectURL(f) }));
   renderPreviewFotos();
+  evt.target.value = '';
 }
 
 function renderPreviewFotos() {
   const prev = document.getElementById('preview-fotos');
   if (!prev) return;
+  if (!_fotosUpload.length) {
+    prev.innerHTML = '';
+    const txt = document.getElementById('upload-txt');
+    if (txt) txt.innerHTML = 'Clique para adicionar fotos<br><small style="color:var(--text-3)">A primeira foto será a capa</small>';
+    return;
+  }
+  // Atualizar texto da área
+  const txt = document.getElementById('upload-txt');
+  if (txt) txt.innerHTML = _fotosUpload.length + ' foto(s) selecionada(s) · <span style="color:var(--primary)">Adicionar mais</span>';
+
   prev.innerHTML = _fotosUpload.map((f, i) => {
-    const url = f.url || fotoUrl(f);
-    return `<div class="preview-foto">
-      <img src="${url}" alt="">
-      ${i===0 ? '<span class="foto-capa">Capa</span>' : ''}
-      <button class="foto-rm" onclick="removerFoto(${i})">×</button>
+    const url = typeof f === 'string' ? fotoUrl(f) : (f.url || '');
+    return `<div class="preview-foto" style="position:relative;width:80px;height:60px;border-radius:8px;overflow:hidden;flex-shrink:0">
+      <img src="${url}" alt="foto ${i+1}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.background='#333'">
+      ${i===0 ? '<span style="position:absolute;bottom:2px;left:2px;background:#D4A017;color:#000;font-size:8px;font-weight:800;padding:2px 5px;border-radius:3px">Capa</span>' : ''}
+      <button onclick="removerFoto(${i})" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.75);color:#fff;width:18px;height:18px;border-radius:50%;border:none;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;line-height:1">×</button>
     </div>`;
   }).join('');
 }
 
-function removerFoto(idx) { _fotosUpload.splice(idx,1); renderPreviewFotos(); }
+function removerFoto(idx) {
+  _fotosUpload.splice(idx, 1);
+  renderPreviewFotos();
+}
 
 async function _uploadFotos() {
   const paths = [];
