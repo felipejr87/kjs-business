@@ -1574,7 +1574,10 @@ function buildSpecs(item) {
 ═══════════════════════════════════ */
 function buildAdCard(item) {
   var tipo = getTipoConfig(item.tipo);
-  var foto = (item.fotos && item.fotos.length > 0) ? item.fotos[0] : null;
+  var _fotoPath = (item.fotos && item.fotos.length > 0) ? item.fotos[0] : null;
+  var foto = _fotoPath
+    ? (_fotoPath.startsWith('http') ? _fotoPath : SUPABASE_URL + '/storage/v1/object/public/fotos-kjs/' + _fotoPath)
+    : null;
   var specs = buildSpecs(item);
   var msgWpp = templateProduto(item.titulo || 'produto', formatarPreco(item.valor_venda), item.tipo);
 
