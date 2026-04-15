@@ -4,40 +4,163 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KJS Business — Painel</title>
-  <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <script src="js/theme.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    /* ========================================================
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+
+    /* ── DESIGN TOKENS ── */
+    :root {
+      --primary:    #D4A017;
+      --primary-dk: #B8860B;
+      --primary-bg: rgba(212,160,23,.10);
+      --primary-b:  rgba(212,160,23,.25);
+      --bg:         #0A0A0A;
+      --bg-card:    #111111;
+      --bg-card-2:  #1A1A1A;
+      --text:       #FFFFFF;
+      --text-2:     #A0A0A0;
+      --text-3:     #4A4A4A;
+      --sep:        rgba(255,255,255,.07);
+      --sep-strong: rgba(255,255,255,.14);
+      --success:    #22C55E;
+      --error:      #EF4444;
+      --font-brand: 'Sora', sans-serif;
+      --font-body:  'DM Sans', sans-serif;
+      --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 18px; --r-2xl: 24px;
+    }
+
+    /* ── TEMA CLARO ── */
+    [data-theme="light"] {
+      --bg:        #F0F0F2;
+      --bg-card:   #FFFFFF;
+      --bg-card-2: #E8E8EA;
+      --text:      #0A0A0A;
+      --text-2:    #5C5C5C;
+      --text-3:    #9A9A9A;
+      --sep:       rgba(0,0,0,.08);
+      --sep-strong:rgba(0,0,0,.16);
+    }
+    [data-theme="light"] .admin-topbar { background: rgba(240,240,242,.95); }
+    [data-theme="light"] .admin-sidebar { background: #FFFFFF; }
+    [data-theme="light"] .modal-box { background: #FFFFFF; }
+    [data-theme="light"] .modal-header,
+    [data-theme="light"] .modal-footer { background: #FFFFFF; }
+    [data-theme="light"] .form-input,
+    [data-theme="light"] .form-select,
+    [data-theme="light"] .form-textarea { background: #F5F5F5; color: #0A0A0A; }
+    [data-theme="light"] .skeleton {
+      background: linear-gradient(90deg,#DADADA 25%,#EEEEEE 50%,#DADADA 75%);
+      background-size: 200% 100%;
+    }
+    [data-theme="light"] .login-card { box-shadow: 0 16px 60px rgba(0,0,0,.15); }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font-family: var(--font-body); cursor: pointer; border: none; }
+    input, select, textarea { font-family: var(--font-body); }
+
+    /* ── BOTÕES ── */
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      background: var(--primary); color: #000;
+      font-family: var(--font-brand); font-size: 14px; font-weight: 700;
+      padding: 12px 24px; border-radius: var(--r-lg);
+      border: none; cursor: pointer; transition: all .2s;
+    }
+    .btn-primary:hover { background: var(--primary-dk); }
+    .btn-primary:active { transform: scale(.98); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: transparent; border: 1px solid var(--sep);
+      color: var(--text-2); font-family: var(--font-brand);
+      font-size: 13px; font-weight: 600;
+      padding: 8px 16px; border-radius: var(--r-md);
+      cursor: pointer; transition: all .2s;
+    }
+    .btn-secondary:hover { border-color: var(--sep-strong); color: var(--text); }
+
+    /* ── CAMPOS ── */
+    .campo-grupo { display: flex; flex-direction: column; gap: 6px; }
+    .campo-grupo label { font-family: var(--font-brand); font-size: 11px; font-weight: 700; color: var(--text-2); letter-spacing: .08em; text-transform: uppercase; }
+    .form-input, .form-select, .form-textarea {
+      background: var(--bg-card-2);
+      border: 1px solid var(--sep);
+      border-radius: var(--r-md);
+      color: var(--text); font-size: 14px;
+      padding: 11px 14px; outline: none;
+      transition: border-color .2s; width: 100%;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--primary-b); }
+    .form-textarea { min-height: 90px; resize: vertical; }
+    .form-select { appearance: none; -webkit-appearance: none; cursor: pointer; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-check { display: flex; align-items: center; gap: 10px; }
+    .form-check input { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+
+    /* ── SKELETON ── */
+    .skeleton {
+      background: linear-gradient(90deg,#1A1A1A 25%,#222 50%,#1A1A1A 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s ease-in-out infinite;
+      border-radius: 6px;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* ── BADGE ── */
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; }
+    .badge-verde   { background: rgba(34,197,94,.12); color:#22C55E; border:1px solid rgba(34,197,94,.2); }
+    .badge-amarelo { background: rgba(234,179,8,.12);  color:#EAB308; border:1px solid rgba(234,179,8,.2); }
+    .badge-cinza   { background: rgba(120,120,120,.12); color:#888;   border:1px solid rgba(120,120,120,.2); }
+
+    /* ── TOGGLE TEMA ── */
+    #theme-toggle {
+      width: 34px; height: 34px; border-radius: var(--r-md);
+      background: var(--bg-card-2); border: 1px solid var(--sep);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 15px; transition: all .2s; flex-shrink: 0;
+    }
+    #theme-toggle:hover { border-color: var(--primary-b); background: var(--primary-bg); }
+
+    /* ═══════════════════════════════════
        LOGIN
-       ======================================================== */
+    ═══════════════════════════════════ */
     #tela-login {
       min-height: 100vh;
-      display: none; /* JS mostra */
+      display: flex;                    /* sempre flex — JS não precisa tocar */
       align-items: center; justify-content: center;
       padding: 24px;
       position: relative;
     }
+    #tela-login.escondido { display: none !important; }
+
     #tela-login::before {
       content: '';
       position: absolute; inset: 0;
-      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(212,160,23,.12) 0%, transparent 60%);
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(212,160,23,.10) 0%, transparent 60%);
       pointer-events: none;
     }
+
     .login-card {
       background: var(--bg-card);
       border: 1px solid var(--sep);
       border-radius: var(--r-2xl);
       padding: 40px;
       width: 100%; max-width: 380px;
-      position: relative;
+      position: relative; z-index: 1;
     }
-    .login-logo {
-      text-align: center; margin-bottom: 32px;
-    }
+    .login-logo { text-align: center; margin-bottom: 32px; }
     .login-logo .logo-icon {
       width: 56px; height: 56px;
       background: var(--primary); border-radius: 16px;
@@ -46,54 +169,49 @@
       color: #000; margin: 0 auto 12px;
     }
     .login-logo h1 { font-family: var(--font-brand); font-size: 20px; font-weight: 800; }
-    .login-logo p { color: var(--text-3); font-size: 13px; margin-top: 4px; }
-
+    .login-logo p  { color: var(--text-3); font-size: 13px; margin-top: 4px; }
     #form-login { display: flex; flex-direction: column; gap: 14px; }
     #form-login .btn-primary { width: 100%; justify-content: center; padding: 13px; font-size: 15px; margin-top: 4px; }
+    .login-erro { color: var(--error); font-size: 13px; text-align: center; display: none; }
 
-    /* ========================================================
+    /* ═══════════════════════════════════
        PAINEL
-       ======================================================== */
-    #tela-painel {
-      display: none; /* JS mostra */
-      min-height: 100vh;
-      flex-direction: column;
-    }
+    ═══════════════════════════════════ */
+    #tela-painel { display: none; min-height: 100vh; flex-direction: column; }
+    #tela-painel.visivel { display: flex; }
 
     /* TOPBAR */
     .admin-topbar {
       height: 56px;
-      background: var(--bg-card);
+      background: rgba(17,17,17,.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--sep);
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px;
-      position: sticky; top: 0; z-index: 50;
+      padding: 0 20px; position: sticky; top: 0; z-index: 100;
+      gap: 12px;
     }
-    .admin-topbar-logo {
-      font-family: var(--font-brand); font-size: 16px; font-weight: 800;
-      display: flex; align-items: center; gap: 8px;
+    .topbar-logo {
+      font-family: var(--font-brand); font-size: 15px; font-weight: 800;
+      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
     }
-    .admin-topbar-logo span {
-      background: var(--primary); color: #000; border-radius: 6px;
-      padding: 2px 8px; font-size: 11px;
+    .topbar-badge {
+      background: var(--primary); color: #000;
+      border-radius: 6px; padding: 2px 8px;
+      font-size: 10px; font-weight: 800; letter-spacing: .05em;
     }
-    .topbar-acao { display: flex; gap: 12px; align-items: center; }
-    .topbar-acao a {
-      color: var(--text-3); font-size: 13px; text-decoration: none;
-      font-family: var(--font-brand); font-weight: 600;
-    }
-    .topbar-acao a:hover { color: var(--text-2); }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
 
-    /* LAYOUT DOIS PAINÉIS */
+    /* LAYOUT */
     .admin-layout { display: flex; flex: 1; min-height: calc(100vh - 56px); }
 
-    /* SIDEBAR ADMIN */
+    /* SIDEBAR */
     .admin-sidebar {
-      width: 220px; flex-shrink: 0;
+      width: 210px; flex-shrink: 0;
       background: var(--bg-card);
       border-right: 1px solid var(--sep);
-      padding: 20px 12px;
-      display: flex; flex-direction: column; gap: 4px;
+      padding: 16px 10px;
+      display: flex; flex-direction: column; gap: 2px;
     }
     .nav-item {
       display: flex; align-items: center; gap: 10px;
@@ -105,21 +223,21 @@
     .nav-item:hover { background: rgba(255,255,255,.04); color: var(--text); }
     .nav-item.ativo { background: var(--primary-bg); color: var(--primary); }
     .nav-icon {
-      width: 30px; height: 30px; border-radius: 7px;
-      display: flex; align-items: center; justify-content: center; font-size: 15px;
-      flex-shrink: 0;
+      width: 28px; height: 28px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
     }
     .nav-item.ativo .nav-icon { background: var(--primary); }
 
-    /* ÁREA PRINCIPAL */
-    .admin-main { flex: 1; overflow-y: auto; padding: 28px; }
+    /* MAIN */
+    .admin-main { flex: 1; overflow-y: auto; padding: 24px; }
 
     /* BOTTOM NAV MOBILE */
     .admin-bottom-nav {
       display: none;
       position: fixed; bottom: 0; left: 0; right: 0;
       height: 60px; z-index: 100;
-      background: rgba(20,20,20,.95);
+      background: rgba(17,17,17,.97);
       backdrop-filter: blur(16px);
       border-top: 1px solid var(--sep);
       justify-content: space-around; align-items: center;
@@ -133,14 +251,12 @@
     .bnav-item.ativo { color: var(--primary); }
     .bnav-icon { font-size: 20px; }
 
-    /* ========================================================
-       DASHBOARD
-       ======================================================== */
-    .dashboard-header {
+    /* ── DASHBOARD ── */
+    .page-header {
       display: flex; align-items: center; justify-content: space-between;
       flex-wrap: wrap; gap: 12px; margin-bottom: 24px;
     }
-    .dashboard-header h2 { font-family: var(--font-brand); font-size: 22px; font-weight: 800; }
+    .page-header h2 { font-family: var(--font-brand); font-size: 22px; font-weight: 800; letter-spacing: -.01em; }
     .periodo-tabs { display: flex; gap: 4px; }
     .periodo-btn {
       padding: 6px 14px; border-radius: 99px;
@@ -151,291 +267,421 @@
     .periodo-btn.ativo { background: var(--primary-bg); border-color: var(--primary); color: var(--primary); }
 
     .metricas-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 16px; margin-bottom: 28px;
+      display: grid; grid-template-columns: repeat(auto-fill,minmax(180px,1fr));
+      gap: 14px; margin-bottom: 24px;
     }
     .metrica-card {
-      background: var(--bg-card);
-      border: 1px solid var(--sep);
-      border-radius: var(--r-xl);
-      padding: 20px 22px;
-      transition: border-color .2s;
+      background: var(--bg-card); border: 1px solid var(--sep);
+      border-radius: var(--r-xl); padding: 18px 20px; transition: border-color .2s;
     }
     .metrica-card:hover { border-color: var(--sep-strong); }
     .metrica-card.destaque { border-color: rgba(212,160,23,.3); background: var(--primary-bg); }
-    .metrica-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; margin-bottom: 8px; }
-    .metrica-valor { font-family: var(--font-brand); font-size: 26px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 4px; }
+    .metrica-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: .08em; font-weight: 700; margin-bottom: 8px; }
+    .metrica-valor { font-family: var(--font-brand); font-size: 24px; font-weight: 800; letter-spacing: -.02em; }
     .metrica-valor.positivo { color: var(--success); }
-    .metrica-valor.negativo { color: var(--error); }
-    .metrica-sub { font-size: 12px; color: var(--text-3); }
+    .metrica-sub { font-size: 11px; color: var(--text-3); margin-top: 4px; }
 
-    /* GRÁFICO */
     .grafico-section {
       background: var(--bg-card); border: 1px solid var(--sep);
-      border-radius: var(--r-xl); padding: 24px; margin-bottom: 24px;
+      border-radius: var(--r-xl); padding: 20px; margin-bottom: 20px;
     }
-    .grafico-titulo { font-family: var(--font-brand); font-size: 13px; font-weight: 700; color: var(--text-2); margin-bottom: 16px; text-transform: uppercase; letter-spacing: .05em; }
-    .grafico-barras {
-      display: flex; align-items: flex-end; gap: 8px; height: 120px;
-    }
-    .barra-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
-    .barra {
-      width: 100%; background: var(--primary); border-radius: 4px 4px 0 0;
-      position: relative; transition: height .4s;
-      min-height: 4px;
-    }
-    .barra-val { display: none; position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--primary); white-space: nowrap; }
-    .barra:hover .barra-val { display: block; }
-    .barra-label { font-size: 10px; color: var(--text-3); text-align: center; white-space: nowrap; }
+    .grafico-titulo { font-family: var(--font-brand); font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 14px; }
+    .grafico-barras { display: flex; align-items: flex-end; gap: 6px; height: 100px; }
+    .barra-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; height:100%; justify-content:flex-end; }
+    .barra { width:100%; background:var(--primary); border-radius:3px 3px 0 0; min-height:3px; opacity:.7; transition:opacity .2s; }
+    .barra:hover { opacity:1; }
+    .barra-label { font-size:9px; color:var(--text-3); }
 
-    .dashboard-footer {
-      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
-    }
-    .top-produto { color: var(--text-2); font-size: 14px; }
-
-    /* ========================================================
-       LISTA DE ANÚNCIOS
-       ======================================================== */
+    /* ── LISTA ANÚNCIOS ── */
     .lista-header {
       display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 16px;
+      margin-bottom: 14px; flex-wrap: wrap; gap: 10px;
     }
-    .lista-header h2 { font-family: var(--font-brand); font-size: 20px; font-weight: 800; }
-    .filtros-status { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
-    .filtro-btn {
-      padding: 6px 14px; border-radius: 99px;
-      border: 1px solid var(--sep); background: transparent;
-      color: var(--text-3); font-family: var(--font-brand); font-size: 12px; font-weight: 700;
-      cursor: pointer; transition: all .15s;
-    }
-    .filtro-btn.ativo { background: var(--primary-bg); border-color: var(--primary); color: var(--primary); }
-
     .lista-anuncios { display: flex; flex-direction: column; gap: 8px; }
     .item-anuncio {
-      display: flex; align-items: center; gap: 16px;
-      background: var(--bg-card);
-      border: 1px solid var(--sep);
-      border-radius: var(--r-lg);
-      padding: 14px 16px;
-      transition: border-color .2s;
+      display: flex; align-items: center; gap: 14px;
+      background: var(--bg-card); border: 1px solid var(--sep);
+      border-radius: var(--r-lg); padding: 12px 14px; transition: border-color .2s;
     }
     .item-anuncio:hover { border-color: var(--sep-strong); }
-    .item-foto { width: 72px; height: 56px; border-radius: var(--r-sm); overflow: hidden; flex-shrink: 0; }
-    .item-foto img { width: 100%; height: 100%; object-fit: cover; }
-    .item-info { flex: 1; min-width: 0; }
-    .item-titulo { font-family: var(--font-brand); font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .item-tipo { font-size: 11px; color: var(--text-3); margin: 2px 0 6px; }
-    .item-financeiro { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--text-2); }
-    .fin-lucro { color: var(--success); }
-    .item-status { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
-    .status-badge {
-      padding: 3px 10px; border-radius: 99px;
-      font-family: var(--font-brand); font-size: 11px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .04em;
+    .item-thumb {
+      width: 64px; height: 48px; border-radius: var(--r-md);
+      object-fit: cover; background: var(--bg-card-2); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; overflow: hidden;
     }
-    .status-disponivel { background: rgba(34,197,94,.12); color: var(--success); border: 1px solid rgba(34,197,94,.25); }
-    .status-reservado  { background: rgba(245,158,11,.12); color: var(--warning); border: 1px solid rgba(245,158,11,.25); }
-    .status-vendido    { background: rgba(160,160,160,.1); color: var(--text-3); border: 1px solid rgba(160,160,160,.2); }
-    .destaque-badge { font-size: 10px; color: var(--primary); font-weight: 700; }
-    .item-acoes { display: flex; gap: 6px; }
-    .item-acoes button {
+    .item-thumb img { width:100%; height:100%; object-fit:cover; }
+    .item-info { flex:1; min-width:0; }
+    .item-titulo { font-family:var(--font-brand); font-size:14px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .item-meta   { font-size:12px; color:var(--text-2); margin-top:3px; }
+    .item-valores { text-align:right; font-size:12px; color:var(--text-2); line-height:1.7; }
+    .item-valores strong { font-family:var(--font-brand); font-size:15px; color:var(--primary); }
+    .item-acoes { display:flex; gap:6px; flex-shrink:0; }
+    .btn-acao {
       background: var(--bg-card-2); border: 1px solid var(--sep);
-      border-radius: var(--r-sm); padding: 6px 10px;
-      cursor: pointer; font-size: 15px; transition: all .15s;
+      border-radius: var(--r-sm); padding: 7px 10px;
+      cursor: pointer; font-size: 15px; transition: all .15s; line-height:1;
     }
-    .item-acoes button:hover { border-color: var(--sep-strong); background: rgba(255,255,255,.04); }
-    .item-acoes .btn-venda { border-color: rgba(34,197,94,.3); }
-    .item-acoes .btn-danger { border-color: rgba(239,68,68,.3); }
+    .btn-acao:hover { border-color: var(--sep-strong); }
+    .btn-acao.btn-venda:hover   { border-color:rgba(34,197,94,.4); }
+    .btn-acao.btn-danger:hover  { border-color:rgba(239,68,68,.4); }
 
-    /* ========================================================
-       LISTA DE VENDAS
-       ======================================================== */
-    .lista-vendas { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+    /* ── LISTA VENDAS ── */
+    .lista-vendas { display:flex; flex-direction:column; gap:8px; }
     .item-venda {
-      display: flex; align-items: center; gap: 16px;
-      background: var(--bg-card); border: 1px solid var(--sep);
-      border-radius: var(--r-lg); padding: 14px 16px;
+      display:flex; align-items:center; gap:14px;
+      background:var(--bg-card); border:1px solid var(--sep);
+      border-radius:var(--r-lg); padding:12px 16px;
     }
-    .venda-info { flex: 1; min-width: 0; }
-    .venda-titulo { font-family: var(--font-brand); font-size: 14px; font-weight: 700; margin-bottom: 4px; }
-    .venda-data  { font-size: 12px; color: var(--text-3); }
-    .venda-comprador { font-size: 12px; color: var(--text-2); margin-top: 4px; }
-    .venda-pgto { display: flex; flex-direction: column; gap: 4px; }
-    .venda-valores { text-align: right; font-size: 13px; color: var(--text-2); line-height: 1.6; }
-    .venda-valores strong { font-family: var(--font-brand); }
+    .venda-emoji { font-size:22px; flex-shrink:0; }
+    .venda-info { flex:1; min-width:0; }
+    .venda-titulo { font-family:var(--font-brand); font-size:14px; font-weight:700; }
+    .venda-meta   { font-size:12px; color:var(--text-3); margin-top:3px; }
+    .venda-valores { text-align:right; font-size:12px; color:var(--text-2); line-height:1.7; }
+    .venda-valores strong { font-family:var(--font-brand); font-size:16px; color:var(--success); display:block; }
 
-    /* ========================================================
-       CONFIG
-       ======================================================== */
-    .config-form { display: flex; flex-direction: column; gap: 16px; max-width: 500px; margin-bottom: 40px; }
-    .config-section { max-width: 500px; }
+    /* ── CONFIG ── */
+    .config-form { display:flex; flex-direction:column; gap:14px; max-width:480px; }
+    .config-section-title { font-family:var(--font-brand); font-size:13px; font-weight:800; color:var(--text-2); text-transform:uppercase; letter-spacing:.08em; margin:24px 0 12px; }
 
-    /* ========================================================
-       RESPONSIVO
-       ======================================================== */
+    /* ── MODAL ── */
+    .modal-overlay {
+      display:none; position:fixed; inset:0; z-index:500;
+      background:rgba(0,0,0,.75); backdrop-filter:blur(4px);
+      align-items:center; justify-content:center; padding:20px;
+    }
+    .modal-overlay.aberto { display:flex; animation:fadeIn .2s ease; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    .modal-box {
+      background:var(--bg-card); border:1px solid var(--sep);
+      border-radius:var(--r-2xl); width:100%; max-width:600px;
+      max-height:90vh; overflow-y:auto;
+      animation:slideUp .25s cubic-bezier(.4,0,.2,1);
+    }
+    @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+    .modal-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:20px 24px; border-bottom:1px solid var(--sep);
+      position:sticky; top:0; background:var(--bg-card); z-index:1;
+    }
+    .modal-title { font-family:var(--font-brand); font-size:17px; font-weight:800; }
+    .modal-close {
+      width:32px; height:32px; border-radius:50%;
+      background:var(--bg-card-2); border:1px solid var(--sep);
+      color:var(--text-2); font-size:18px; display:flex;
+      align-items:center; justify-content:center; cursor:pointer;
+    }
+    .modal-body { padding:24px; display:flex; flex-direction:column; gap:14px; }
+    .modal-footer {
+      padding:16px 24px; border-top:1px solid var(--sep);
+      display:flex; gap:10px; justify-content:flex-end;
+      position:sticky; bottom:0; background:var(--bg-card);
+    }
+    .secao-form {
+      font-family:var(--font-brand); font-size:10px; font-weight:700;
+      color:var(--text-3); text-transform:uppercase; letter-spacing:.1em;
+      padding-bottom:8px; border-bottom:1px solid var(--sep);
+      margin-top:4px;
+    }
+
+    /* Upload fotos */
+    .upload-area {
+      border:2px dashed var(--sep); border-radius:var(--r-lg);
+      padding:24px; text-align:center; cursor:pointer; transition:border-color .2s;
+    }
+    .upload-area:hover { border-color:var(--primary-b); }
+    .preview-fotos { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .preview-foto { position:relative; width:72px; height:54px; border-radius:var(--r-md); overflow:hidden; }
+    .preview-foto img { width:100%; height:100%; object-fit:cover; }
+    .foto-capa {
+      position:absolute; bottom:2px; left:2px;
+      background:var(--primary); color:#000;
+      font-size:8px; font-weight:800; padding:2px 5px; border-radius:3px;
+    }
+    .foto-rm {
+      position:absolute; top:2px; right:2px;
+      background:rgba(0,0,0,.75); color:#fff;
+      width:16px; height:16px; border-radius:50%;
+      font-size:11px; display:flex; align-items:center; justify-content:center;
+      cursor:pointer; border:none; line-height:1;
+    }
+
+    /* Tipo btns */
+    .tipo-btns { display:flex; gap:8px; }
+    .btn-tipo {
+      flex:1; padding:10px; border-radius:var(--r-md);
+      background:var(--bg-card-2); border:1px solid var(--sep);
+      color:var(--text-2); font-family:var(--font-brand); font-weight:700; font-size:14px;
+      cursor:pointer; transition:all .15s;
+    }
+    .btn-tipo.ativo { background:var(--primary-bg); border-color:var(--primary-b); color:var(--primary); }
+
+    /* Calculo lucro */
+    .calculo-lucro {
+      padding:10px 14px; background:var(--bg-card-2);
+      border-radius:var(--r-md); font-size:13px; color:var(--text-2); min-height:38px;
+    }
+
+    /* ── RESPONSIVO ── */
     @media (max-width: 768px) {
-      .admin-sidebar { display: none; }
-      .admin-bottom-nav { display: flex; }
-      .admin-main { padding: 16px; padding-bottom: 80px; }
-      .metricas-grid { grid-template-columns: 1fr 1fr; }
-      .item-anuncio { flex-wrap: wrap; }
-      .item-acoes { flex-wrap: wrap; }
+      .admin-sidebar { display:none; }
+      .admin-bottom-nav { display:flex; }
+      .admin-main { padding:16px; padding-bottom:80px; }
+      .metricas-grid { grid-template-columns:1fr 1fr; }
+      .item-anuncio { flex-wrap:wrap; }
+      .form-row { grid-template-columns:1fr; }
     }
-
-/* ═══ TEMA CLARO — admin ═══ */
-[data-theme="light"] {
-  --bg:      #F0F0F2;
-  --bg-card: #FFFFFF;
-  --bg-card-2: #E8E8EA;
-  --text:    #0A0A0A;
-  --text-2:  #5C5C5C;
-  --text-3:  #9A9A9A;
-  --sep:     rgba(0,0,0,.08);
-}
-[data-theme="light"] .painel-nav {
-  background: rgba(240,240,242,.93);
-  border-bottom-color: rgba(0,0,0,.08);
-}
-[data-theme="light"] .login-card { box-shadow: 0 8px 40px rgba(0,0,0,.12); }
-[data-theme="light"] .login-input { background: #F5F5F5; }
-[data-theme="light"] .modal { background: #FFFFFF; }
-[data-theme="light"] .modal-header { background: #FFFFFF; }
-[data-theme="light"] .modal-footer { background: #FFFFFF; }
-[data-theme="light"] th { background: #FAFAFA; }
-[data-theme="light"] .tabela-wrap { background: #FFFFFF; }
-[data-theme="light"] .metrica-card { background: #FFFFFF; }
-[data-theme="light"] .grafico-card { background: #FFFFFF; }
-[data-theme="light"] .form-input,
-[data-theme="light"] .form-textarea,
-[data-theme="light"] .form-select { background: #F5F5F5; color: #0A0A0A; }
-[data-theme="light"] .upload-area { border-color: rgba(0,0,0,.15); }
-[data-theme="light"] .btn-cancel { color: #5C5C5C; }
-[data-theme="light"] .skeleton {
-  background: linear-gradient(90deg,#DADADA 25%,#EEEEEE 50%,#DADADA 75%);
-  background-size: 200% 100%;
-}
-
-/* Toggle */
-#theme-toggle {
-  width:36px;height:36px;border-radius:10px;
-  background:var(--bg-card);border:1px solid var(--sep);
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;font-size:16px;transition:all .22s;
-  margin-left:4px;
-}
-#theme-toggle:hover{border-color:rgba(212,160,23,.35);background:rgba(212,160,23,.1);}
-
   </style>
 </head>
 <body>
 
-  <!-- TELA LOGIN -->
-  <div id="tela-login">
-    <div class="login-card">
-      <div class="login-logo">
-        <div class="logo-icon">K</div>
-        <h1>KJS Business</h1>
-        <p>Acesso ao painel</p>
+<!-- ═══ LOGIN ═══ -->
+<div id="tela-login">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-icon">K</div>
+      <h1>KJS Business</h1>
+      <p>Acesso ao painel administrativo</p>
+    </div>
+    <form id="form-login" onsubmit="fazerLogin(event)">
+      <div class="campo-grupo">
+        <label>Senha</label>
+        <input id="senha-input" type="password" placeholder="••••••••" required autocomplete="current-password">
       </div>
-      <form id="form-login">
-        <div class="campo-grupo">
-          <label>Email</label>
-          <input id="login-email" type="email" placeholder="seu@email.com" required autocomplete="email">
-        </div>
-        <div class="campo-grupo">
-          <label>Senha</label>
-          <input id="login-senha" type="password" placeholder="••••••••" required autocomplete="current-password">
-        </div>
-        <button type="submit" class="btn-primary">Entrar no painel →</button>
-      </form>
+      <button type="submit" id="btn-login" class="btn-primary">Entrar →</button>
+      <p id="login-erro" class="login-erro">Senha incorreta. Tente novamente.</p>
+    </form>
+  </div>
+</div>
+
+<!-- ═══ PAINEL ═══ -->
+<div id="tela-painel">
+
+  <div class="admin-topbar">
+    <div class="topbar-logo">
+      KJS Business <span class="topbar-badge">PAINEL</span>
+    </div>
+    <div class="topbar-right">
+      <a href="/" target="_blank" style="font-size:12px;color:var(--text-3);font-family:var(--font-brand);font-weight:600">Ver vitrine ↗</a>
+      <button id="theme-toggle" onclick="kjs_toggleTheme()" title="Alternar tema"><span id="theme-icon">☀️</span></button>
+      <button class="btn-secondary" onclick="logout()" style="padding:7px 14px;font-size:12px">Sair</button>
     </div>
   </div>
 
-  <!-- TELA PAINEL -->
-  <div id="tela-painel">
+  <div class="admin-layout">
+    <nav class="admin-sidebar">
+      <div class="nav-item ativo" data-aba="dashboard" onclick="irAba('dashboard')">
+        <div class="nav-icon">📊</div>Dashboard
+      </div>
+      <div class="nav-item" data-aba="anuncios" onclick="irAba('anuncios')">
+        <div class="nav-icon">🏷️</div>Anúncios
+      </div>
+      <div class="nav-item" data-aba="vendas" onclick="irAba('vendas')">
+        <div class="nav-icon">💰</div>Vendas
+      </div>
+      <div class="nav-item" data-aba="config" onclick="irAba('config')">
+        <div class="nav-icon">⚙️</div>Configurações
+      </div>
+    </nav>
 
-    <!-- TOPBAR -->
-    <div class="admin-topbar">
-      <div class="admin-topbar-logo">
-        KJS Business <span>PAINEL</span>
-      </div>
-      <div class="topbar-acao">
-        <a href="/" target="_blank">Ver vitrine →</a>
-        <button class="btn-secondary" onclick="logout()" style="padding:6px 14px;font-size:12px">Sair</button>
-      </div>
+    <main class="admin-main">
+      <div id="aba-dashboard" class="aba-content"><!-- preenchido pelo JS --></div>
+      <div id="aba-anuncios"  class="aba-content" style="display:none"><!-- preenchido pelo JS --></div>
+      <div id="aba-vendas"    class="aba-content" style="display:none"><!-- preenchido pelo JS --></div>
+      <div id="aba-config"    class="aba-content" style="display:none"><!-- preenchido pelo JS --></div>
+    </main>
+  </div>
+
+  <div class="admin-bottom-nav">
+    <div class="bnav-item ativo" onclick="irAba('dashboard')"><div class="bnav-icon">📊</div>Dashboard</div>
+    <div class="bnav-item"       onclick="irAba('anuncios')"> <div class="bnav-icon">🏷️</div>Anúncios</div>
+    <div class="bnav-item"       onclick="irAba('vendas')">   <div class="bnav-icon">💰</div>Vendas</div>
+    <div class="bnav-item"       onclick="irAba('config')">   <div class="bnav-icon">⚙️</div>Config</div>
+  </div>
+</div>
+
+<!-- ═══ MODAL ANÚNCIO ═══ -->
+<div id="modal-anuncio" class="modal-overlay" onclick="if(event.target===this)fecharModal('modal-anuncio')">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-anuncio-titulo">Novo anúncio</div>
+      <button class="modal-close" onclick="fecharModal('modal-anuncio')">×</button>
     </div>
-
-    <!-- LAYOUT -->
-    <div class="admin-layout">
-
-      <!-- SIDEBAR -->
-      <nav class="admin-sidebar">
-        <div class="nav-item ativo" data-aba="dashboard" onclick="irAba('dashboard')">
-          <div class="nav-icon">📊</div>
-          Dashboard
+    <div class="modal-body">
+      <input type="hidden" id="f-tipo" value="carro">
+      <div class="campo-grupo">
+        <label>Tipo</label>
+        <div class="tipo-btns">
+          <button class="btn-tipo ativo" data-tipo="carro"   onclick="setTipoModal('carro')">🚗 Carro</button>
+          <button class="btn-tipo"       data-tipo="imovel"  onclick="setTipoModal('imovel')">🏠 Imóvel</button>
+          <button class="btn-tipo"       data-tipo="moto"    onclick="setTipoModal('moto')">🏍️ Moto</button>
+          <button class="btn-tipo"       data-tipo="celular" onclick="setTipoModal('celular')">📱 Celular</button>
+          <button class="btn-tipo"       data-tipo="outro"   onclick="setTipoModal('outro')">✨ Outro</button>
         </div>
-        <div class="nav-item" data-aba="anuncios" onclick="irAba('anuncios')">
-          <div class="nav-icon">🏷️</div>
-          Anúncios
+      </div>
+      <div class="campo-grupo">
+        <label>Título do anúncio *</label>
+        <input type="text" id="f-titulo" class="form-input" placeholder="Ex: Honda Civic 2020 prata automático">
+      </div>
+      <div class="campo-grupo">
+        <label>Descrição</label>
+        <textarea id="f-descricao" class="form-textarea" placeholder="Detalhes adicionais..."></textarea>
+      </div>
+      <div class="secao-form">Valores (privado — nunca exibido ao cliente)</div>
+      <div class="form-row">
+        <div class="campo-grupo">
+          <label>Valor pago (custo)</label>
+          <input type="number" id="f-valor-pago" class="form-input" placeholder="0" oninput="calcularLucro()">
         </div>
-        <div class="nav-item" data-aba="vendas" onclick="irAba('vendas')">
-          <div class="nav-icon">💰</div>
-          Vendas
+        <div class="campo-grupo">
+          <label>Valor de venda *</label>
+          <input type="number" id="f-valor-venda" class="form-input" placeholder="0" oninput="calcularLucro()">
         </div>
-        <div class="nav-item" data-aba="config" onclick="irAba('config')">
-          <div class="nav-icon">⚙️</div>
-          Configurações
+      </div>
+      <div class="calculo-lucro" id="calculo-lucro"></div>
+      <!-- Campos carro -->
+      <div id="campos-carro">
+        <div class="secao-form">Especificações do carro</div>
+        <div class="form-row">
+          <div class="campo-grupo"><label>Marca</label><input type="text" id="f-marca" class="form-input" placeholder="Honda"></div>
+          <div class="campo-grupo"><label>Modelo</label><input type="text" id="f-modelo" class="form-input" placeholder="Civic"></div>
         </div>
-      </nav>
-
-      <!-- CONTEÚDO DAS ABAS -->
-      <main class="admin-main">
-        <div id="aba-dashboard" class="aba-content">
-          <div class="metricas-grid">
-            ${Array(4).fill('<div class="metrica-card"><div class="skeleton" style="height:14px;width:60%;margin-bottom:12px"></div><div class="skeleton" style="height:28px;width:80%;margin-bottom:8px"></div><div class="skeleton" style="height:12px;width:40%"></div></div>').join('')}
+        <div class="form-row">
+          <div class="campo-grupo"><label>Ano</label><input type="number" id="f-ano" class="form-input" placeholder="2020"></div>
+          <div class="campo-grupo"><label>Km</label><input type="number" id="f-km" class="form-input" placeholder="45000"></div>
+        </div>
+        <div class="form-row">
+          <div class="campo-grupo"><label>Cor</label><input type="text" id="f-cor" class="form-input"></div>
+          <div class="campo-grupo">
+            <label>Câmbio</label>
+            <select id="f-cambio" class="form-select">
+              <option value="">—</option><option>Manual</option><option>Automático</option><option>CVT</option>
+            </select>
           </div>
         </div>
-        <div id="aba-anuncios"  class="aba-content" style="display:none"></div>
-        <div id="aba-vendas"    class="aba-content" style="display:none"></div>
-        <div id="aba-config"    class="aba-content" style="display:none"></div>
-      </main>
+        <div class="campo-grupo">
+          <label>Combustível</label>
+          <select id="f-combustivel" class="form-select">
+            <option value="">—</option><option>Flex</option><option>Gasolina</option><option>Diesel</option><option>Elétrico</option>
+          </select>
+        </div>
+      </div>
+      <!-- Campos imóvel -->
+      <div id="campos-imovel" style="display:none">
+        <div class="secao-form">Detalhes do imóvel</div>
+        <div class="form-row">
+          <div class="campo-grupo"><label>Cidade</label><input type="text" id="f-cidade" class="form-input"></div>
+          <div class="campo-grupo"><label>Bairro</label><input type="text" id="f-bairro" class="form-input"></div>
+        </div>
+        <div class="form-row">
+          <div class="campo-grupo"><label>Área m²</label><input type="number" id="f-area" class="form-input"></div>
+          <div class="campo-grupo"><label>Quartos</label><input type="number" id="f-quartos" class="form-input"></div>
+        </div>
+        <div class="form-row">
+          <div class="campo-grupo"><label>Vagas</label><input type="number" id="f-vagas" class="form-input"></div>
+          <div class="campo-grupo">
+            <label>Tipo</label>
+            <select id="f-tipo-imovel" class="form-select">
+              <option value="">—</option><option>Casa</option><option>Apartamento</option><option>Terreno</option><option>Comercial</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <!-- Fotos -->
+      <div class="secao-form">Fotos</div>
+      <div class="upload-area" onclick="document.getElementById('f-fotos').click()">
+        <input type="file" id="f-fotos" accept="image/*" multiple onchange="onFotosChange(event)" style="display:none">
+        <div style="font-size:28px;margin-bottom:8px">📷</div>
+        <div style="font-size:13px;color:var(--text-2)">Clique para adicionar fotos<br><small style="color:var(--text-3)">A primeira foto será a capa</small></div>
+      </div>
+      <div class="preview-fotos" id="preview-fotos"></div>
+      <!-- Status e destaque -->
+      <div class="secao-form">Configurações</div>
+      <div class="campo-grupo">
+        <label>Status</label>
+        <select id="f-status" class="form-select">
+          <option value="disponivel">Disponível</option>
+          <option value="reservado">Reservado</option>
+          <option value="vendido">Vendido</option>
+        </select>
+      </div>
+      <div class="form-check">
+        <input type="checkbox" id="f-destaque">
+        <label for="f-destaque" style="font-size:14px;cursor:pointer">Marcar como destaque</label>
+      </div>
+      <!-- Formas de pagamento -->
+      <div class="secao-form">Formas de pagamento aceitas</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <div class="form-check"><input type="checkbox" id="f-pix" checked><label for="f-pix" style="font-size:14px;cursor:pointer">PIX</label></div>
+        <div class="form-check"><input type="checkbox" id="f-debito" checked><label for="f-debito" style="font-size:14px;cursor:pointer">Débito</label></div>
+        <div class="form-check"><input type="checkbox" id="f-credito" checked><label for="f-credito" style="font-size:14px;cursor:pointer">Crédito parcelado</label></div>
+      </div>
     </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="fecharModal('modal-anuncio')">Cancelar</button>
+      <button id="btn-salvar-anuncio" class="btn-primary" onclick="salvarAnuncio()">Salvar anúncio</button>
+    </div>
+  </div>
+</div>
 
-    <!-- BOTTOM NAV MOBILE -->
-    <div class="admin-bottom-nav">
-      <div class="bnav-item ativo" onclick="irAba('dashboard')">
-        <div class="bnav-icon">📊</div>
-        Dashboard
+<!-- ═══ MODAL VENDA ═══ -->
+<div id="modal-venda" class="modal-overlay" onclick="if(event.target===this)fecharModal('modal-venda')">
+  <div class="modal-box" style="max-width:440px">
+    <div class="modal-header">
+      <div class="modal-title">Registrar venda</div>
+      <button class="modal-close" onclick="fecharModal('modal-venda')">×</button>
+    </div>
+    <div class="modal-body">
+      <p id="venda-anuncio-nome" style="font-size:14px;color:var(--text-2);font-weight:600"></p>
+      <div class="campo-grupo">
+        <label>Valor final (R$)</label>
+        <input type="number" id="venda-valor" class="form-input">
       </div>
-      <div class="bnav-item" onclick="irAba('anuncios')">
-        <div class="bnav-icon">🏷️</div>
-        Anúncios
+      <div class="campo-grupo">
+        <label>Forma de pagamento</label>
+        <select id="venda-forma" class="form-select" onchange="onFormaPgto(this)">
+          <option value="pix">PIX</option>
+          <option value="debito">Débito</option>
+          <option value="credito_maquininha">Crédito parcelado</option>
+        </select>
       </div>
-      <div class="bnav-item" onclick="irAba('vendas')">
-        <div class="bnav-icon">💰</div>
-        Vendas
+      <div id="venda-parcelas-row" class="campo-grupo" style="display:none">
+        <label>Parcelas</label>
+        <input type="number" id="venda-parcelas" class="form-input" value="1" min="1" max="48">
       </div>
-      <div class="bnav-item" onclick="irAba('config')">
-        <div class="bnav-icon">⚙️</div>
-        Config
+      <div class="campo-grupo">
+        <label>Nome do comprador (opcional)</label>
+        <input type="text" id="venda-comprador" class="form-input">
+      </div>
+      <div class="campo-grupo">
+        <label>WhatsApp do comprador (opcional)</label>
+        <input type="tel" id="venda-tel" class="form-input">
+      </div>
+      <div class="campo-grupo">
+        <label>Observações</label>
+        <textarea id="venda-obs" class="form-textarea" style="min-height:64px"></textarea>
       </div>
     </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="fecharModal('modal-venda')">Cancelar</button>
+      <button id="btn-registrar-venda" class="btn-primary" onclick="registrarVenda()">Registrar venda</button>
+    </div>
+  </div>
+</div>
 
-  </div><!-- fim tela-painel -->
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/js/core.js"></script>
-  <script src="/js/admin.js"></script>
-  <script>
-    // Sincronizar bottom nav com irAba
-    const _irAbaOrig = irAba;
-    function irAba(aba) {
-      _irAbaOrig(aba);
-      document.querySelectorAll('.bnav-item').forEach((el, i) => {
-        const abas = ['dashboard','anuncios','vendas','config'];
-        el.classList.toggle('ativo', abas[i] === aba);
-      });
-    }
-  </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/core.js"></script>
+<script src="js/admin.js"></script>
+<script>
+// Sincronizar bottom nav
+document.querySelectorAll('.bnav-item').forEach((el, i) => {
+  const abas = ['dashboard','anuncios','vendas','config'];
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('ativo'));
+    el.classList.add('ativo');
+    irAba(abas[i]);
+  });
+});
+</script>
 </body>
 </html>
