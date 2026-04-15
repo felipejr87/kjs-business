@@ -1152,7 +1152,7 @@ section { padding: 96px 0; }
     <a href="#sobre">Sobre Kleber</a>
     <a href="#pagamento">Pagamento</a>
   </div>
-  <a class="nav-cta" onclick="abrirWhatsApp('Olá Kleber! Quero saber mais sobre os produtos disponíveis.')">
+  <a class="nav-cta" onclick="abrirWhatsApp(templateGeral())">
     💬 Falar agora
   </a>
   <button id="theme-toggle" onclick="kjs_toggleTheme()" title="Alternar tema" aria-label="Modo claro">
@@ -1260,49 +1260,49 @@ section { padding: 96px 0; }
     </div>
 
     <div class="cats-grid">
-      <div class="cat-card" onclick="abrirWhatsApp('Tenho interesse em negociação de carro. Pode me ajudar?')">
+      <div class="cat-card" onclick="abrirWhatsApp(templateCategoria('carro'))">
         <div class="cat-icon">🚗</div>
         <div class="cat-card-name">Carros</div>
         <p class="cat-card-desc">Nacionais, importados, seminovos ou direto do proprietário. Kleber avalia, vistoria e negocia.</p>
         <div class="cat-card-arrow">Quero um carro →</div>
       </div>
-      <div class="cat-card" onclick="abrirWhatsApp('Tenho interesse em imóvel. Pode me ajudar?')">
+      <div class="cat-card" onclick="abrirWhatsApp(templateCategoria('imovel'))">
         <div class="cat-icon">🏠</div>
         <div class="cat-card-name">Imóveis</div>
         <p class="cat-card-desc">Casas, apartamentos, terrenos e salas comerciais. Compra, venda ou repasse.</p>
         <div class="cat-card-arrow">Quero um imóvel →</div>
       </div>
-      <div class="cat-card" onclick="abrirWhatsApp('Tenho interesse em moto. Pode me ajudar?')">
+      <div class="cat-card" onclick="abrirWhatsApp(templateCategoria('moto'))">
         <div class="cat-icon">🏍️</div>
         <div class="cat-card-name">Motos</div>
         <p class="cat-card-desc">Esportivas, custom, trail, trabalho ou lazer. Do proprietário direto ou repasse de loja.</p>
         <div class="cat-card-arrow">Quero uma moto →</div>
       </div>
-      <div class="cat-card" onclick="abrirWhatsApp('Tenho interesse em celular. Pode me ajudar?')">
+      <div class="cat-card" onclick="abrirWhatsApp(templateCategoria('celular'))">
         <div class="cat-icon">📱</div>
         <div class="cat-card-name">Celulares</div>
         <p class="cat-card-desc">iPhone, Samsung, Android — novos, seminovos ou lacrados. Avaliação completa antes de fechar.</p>
         <div class="cat-card-arrow">Quero um celular →</div>
       </div>
-      <div class="cat-card" onclick="abrirWhatsApp('Tenho interesse em repasse. Pode me ajudar?')">
+      <div class="cat-card" onclick="abrirWhatsApp(templateCategoria('repasse'))">
         <div class="cat-icon">🔄</div>
         <div class="cat-card-name">Repasses de Loja</div>
         <p class="cat-card-desc">Kleber tem acesso a produtos em repasse de lojas e concessionárias com preços diferenciados.</p>
         <div class="cat-card-arrow">Ver repasses →</div>
       </div>
-      <div class="cat-card" onclick="abrirWhatsApp('Preciso de ajuda com uma negociação. Pode me ajudar?')">
+      <div class="cat-card" onclick="abrirWhatsApp(templateCategoria('outro'))">
         <div class="cat-icon">✨</div>
         <div class="cat-card-name">Outros Produtos</div>
         <p class="cat-card-desc">Eletrônicos, equipamentos, itens de valor — se tem comprador e vendedor, Kleber negocia.</p>
         <div class="cat-card-arrow">Falar sobre produto →</div>
       </div>
-      <div class="cat-card" onclick="abrirWhatsApp('Quero vender algo e preciso de um intermediador.')">
+      <div class="cat-card" onclick="abrirWhatsApp(templateCategoria('vender'))">
         <div class="cat-icon">📢</div>
         <div class="cat-card-name">Quer Vender?</div>
         <p class="cat-card-desc">Kleber também encontra compradores qualificados para o seu produto. Sem anúncio, sem espera.</p>
         <div class="cat-card-arrow">Quero vender →</div>
       </div>
-      <div class="cat-card" onclick="abrirWhatsApp('Preciso de consultoria para uma negociação.')">
+      <div class="cat-card" onclick="abrirWhatsApp(templateCategoria('consultoria'))">
         <div class="cat-icon">🤝</div>
         <div class="cat-card-name">Consultoria</div>
         <p class="cat-card-desc">Não sabe se o preço está justo? Kleber avalia o negócio antes de você assinar qualquer coisa.</p>
@@ -1331,7 +1331,7 @@ section { padding: 96px 0; }
     </div>
 
     <div class="ads-footer">
-      <a class="btn btn-outline" onclick="abrirWhatsApp('Quero ver todos os produtos disponíveis!')">
+      <a class="btn btn-outline" onclick="abrirWhatsApp(templateGeral())">
         Ver todos os produtos →
       </a>
     </div>
@@ -1379,7 +1379,7 @@ section { padding: 96px 0; }
           Você não paga para buscar — o lucro vem da negociação com o vendedor.
           <strong>Seu interesse é o interesse do Kleber</strong>: fechar o melhor negócio possível.
         </p>
-        <a class="btn btn-gold" onclick="abrirWhatsApp('Olá Kleber! Quero conhecer melhor o seu trabalho.')">
+        <a class="btn btn-gold" onclick="abrirWhatsApp(templateCategoria('outro'))">
           💬 Fala comigo →
         </a>
       </div>
@@ -1474,17 +1474,54 @@ section { padding: 96px 0; }
 
 <script>
 /* ═══════════════════════════════════
-   CONFIG — preencher antes de publicar
+   CONFIG
 ═══════════════════════════════════ */
-var NUMERO_KLEBER = '5511999999999'; // ← PREENCHER com o número do Kleber
+var NUMERO_KLEBER = '5511952508970';
 var SUPABASE_URL  = 'https://nmdshljajpcnvnoebaqi.supabase.co';
 var SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tZHNobGphanBjbnZub2ViYXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNzA1MzYsImV4cCI6MjA5MTc0NjUzNn0.O2Ck7wif8Am1i2SY9aP5EsGNhf8iUO1h0_55L4c7Gyo';
 
 /* ═══════════════════════════════════
-   WHATSAPP
+   WHATSAPP — templates com saudação + produto
 ═══════════════════════════════════ */
+function saudacao() {
+  var h = new Date().getHours();
+  if (h >= 5  && h < 12) return 'Bom dia';
+  if (h >= 12 && h < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
+
+// Template genérico (sem produto específico)
+function templateGeral() {
+  return saudacao() + ', Kleber! Acessei o site do KJS Business e tenho interesse em saber mais sobre os produtos disponíveis. Pode me ajudar?';
+}
+
+// Template com produto específico (chamado pelo card)
+function templateProduto(titulo, preco, tipo) {
+  var emoji = { carro: '🚗', imovel: '🏠', moto: '🏍️', celular: '📱', repasse: '🔄', eletronico: '💻', outro: '✨' };
+  var ic = emoji[tipo] || '✨';
+  return saudacao() + ', Kleber! Vi o anúncio *' + titulo + '* ' + ic
+    + (preco ? ' por *' + preco + '*' : '')
+    + ' no KJS Business e tenho interesse. Pode me passar mais detalhes?';
+}
+
+// Template por categoria (sem produto específico)
+function templateCategoria(categoria) {
+  var msgs = {
+    carro:    'estou procurando um carro e gostaria da sua ajuda para encontrar o melhor negócio.',
+    imovel:   'estou buscando um imóvel e queria entender como funciona sua intermediação.',
+    moto:     'tenho interesse em moto e queria ver o que está disponível.',
+    celular:  'estou procurando um celular e queria saber o que você tem disponível.',
+    repasse:  'tenho interesse em repasse de loja. O que você tem disponível?',
+    outro:    'preciso de ajuda com uma negociação e queria entender como você trabalha.',
+    vender:   'quero vender um produto e preciso de um intermediador. Pode me ajudar?',
+    consultoria: 'preciso de uma consultoria para avaliar um negócio antes de fechar. Você faz isso?',
+  };
+  var detalhe = msgs[categoria] || 'quero saber mais sobre os seus serviços.';
+  return saudacao() + ', Kleber! Vi o site do KJS Business e ' + detalhe;
+}
+
 function abrirWhatsApp(texto) {
-  var msg = texto || 'Olá Kleber! Vi seu site e quero saber mais sobre os produtos disponíveis.';
+  var msg = texto || templateGeral();
   window.open('https://wa.me/' + NUMERO_KLEBER + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
@@ -1539,7 +1576,7 @@ function buildAdCard(item) {
   var tipo = getTipoConfig(item.tipo);
   var foto = (item.fotos && item.fotos.length > 0) ? item.fotos[0] : null;
   var specs = buildSpecs(item);
-  var msgWpp = 'Olá Kleber! Tenho interesse no produto: "' + item.titulo + '" por ' + formatarPreco(item.valor_venda) + '. Pode me dar mais detalhes?';
+  var msgWpp = templateProduto(item.titulo || 'produto', formatarPreco(item.valor_venda), item.tipo);
 
   var payTags = '';
   if (item.aceita_pix)     payTags += '<span class="pay-tag">PIX</span>';
@@ -1583,7 +1620,7 @@ function renderPlaceholders() {
     { emoji: '📱', label: 'Celular', desc: 'iPhone ou Android' },
   ];
   grid.innerHTML = placeholders.map(function(p) {
-    return '<div class="ad-card" onclick="abrirWhatsApp(\'Olá Kleber! Quero saber quais ' + p.label.toLowerCase() + 's estão disponíveis!\')">'
+    return '<div class="ad-card" onclick="abrirWhatsApp(templateGeral())">'
       + '<div class="ad-img">'
       +   '<div class="ad-placeholder">' + p.emoji + '<span>' + p.desc + '</span></div>'
       +   '<div class="ad-badge">' + p.emoji + ' ' + p.label + '</div>'
@@ -1593,7 +1630,7 @@ function renderPlaceholders() {
       +   '<div class="ad-specs">Novos produtos chegando</div>'
       +   '<div class="ad-price" style="font-size:16px;color:var(--gray)">Consulte disponibilidade</div>'
       +   '<button class="ad-btn" onclick="event.stopPropagation(); abrirWhatsApp(\'Quero saber o que está disponível em ' + p.label.toLowerCase() + '!\')">'
-      +     '💬 Perguntar →'
+      +     '💬 Tenho interesse →'
       +   '</button>'
       + '</div>'
       + '</div>';
