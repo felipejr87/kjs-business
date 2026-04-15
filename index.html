@@ -1,12 +1,31 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<script>
+/* ── KJS THEME ── */
+(function(){
+  var t = localStorage.getItem('kjs_theme');
+  document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+})();
+function kjs_toggleTheme(){
+  var cur  = document.documentElement.getAttribute('data-theme') || 'dark';
+  var next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('kjs_theme', next);
+  var ic = document.getElementById('theme-icon');
+  if(ic) ic.textContent = next === 'dark' ? '☀️' : '🌙';
+}
+document.addEventListener('DOMContentLoaded', function(){
+  var t  = document.documentElement.getAttribute('data-theme') || 'dark';
+  var ic = document.getElementById('theme-icon');
+  if(ic) ic.textContent = t === 'dark' ? '☀️' : '🌙';
+});
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0A0A0A">
 <meta name="description" content="KJS Business — A KJS encontra, negocia e entrega o que você quer. Carros, imóveis, motos, celulares e muito mais.">
 <title>KJS Business — KJS resolve pra você</title>
-<script src="js/theme.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
@@ -1071,9 +1090,9 @@ section { padding: 96px 0; }
    TEMA CLARO — sobreposição de variáveis
 ═══════════════════════════════════ */
 [data-theme="light"] {
-  --black:   #F0F0F2;
+  --black:   #F2F2F4;
   --card:    #FFFFFF;
-  --card-2:  #E8E8EA;
+  --card-2:  #EAEAEC;
   --white:   #0A0A0A;
   --gray:    #5C5C5C;
   --sep:     rgba(0,0,0,.09);
@@ -1081,47 +1100,71 @@ section { padding: 96px 0; }
   --gold-b:  rgba(212,160,23,.32);
 }
 
-/* Nav em modo claro */
+/* Nav */
 [data-theme="light"] .nav {
-  background: rgba(240,240,242,.92);
-  border-bottom-color: rgba(0,0,0,.08);
+  background: rgba(242,242,244,.94);
+  border-bottom-color: rgba(0,0,0,.09);
 }
-[data-theme="light"] .nav-links a:hover { background: rgba(0,0,0,.05); }
+[data-theme="light"] .nav-links a { color: #555; }
+[data-theme="light"] .nav-links a:hover { background: rgba(0,0,0,.05); color: #111; }
+[data-theme="light"] .logo-text { color: #0A0A0A; }
 
-/* Footer em modo claro */
-[data-theme="light"] .footer { background: #E2E2E4; }
+/* Hero */
+[data-theme="light"] .hero { background: var(--black); }
+[data-theme="light"] .hero-eyebrow { background: rgba(212,160,23,.10); }
 
-/* Seções com background fixo */
+/* Steps */
+[data-theme="light"] .step-card { background: #FFFFFF; }
+[data-theme="light"] .steps-grid { background: rgba(0,0,0,.08); }
+
+/* Categorias */
 [data-theme="light"] .cats-section { background: #FFFFFF; }
+[data-theme="light"] .cat-card { background: var(--black); border-color: rgba(0,0,0,.08); }
+
+/* Anúncios */
+[data-theme="light"] .ad-card { background: #FFFFFF; border-color: rgba(0,0,0,.08); }
+[data-theme="light"] .ad-card:hover { border-color: var(--gold-b); box-shadow: 0 16px 40px rgba(0,0,0,.12); }
+[data-theme="light"] .ad-badge { background: rgba(255,255,255,.85); color: #0A0A0A; border-color: rgba(0,0,0,.10); }
+[data-theme="light"] .ad-placeholder { background: linear-gradient(135deg,#E8E8E8,#F5F5F5); }
+[data-theme="light"] .ad-title { color: #0A0A0A; }
+[data-theme="light"] .ad-btn { background: var(--gold-bg); }
+
+/* Sobre */
 [data-theme="light"] .sobre-section { background: #FFFFFF; }
-[data-theme="light"] .stat-box { background: var(--black); }
+[data-theme="light"] .stat-box { background: var(--black); border-color: rgba(0,0,0,.08); }
+[data-theme="light"] .sobre-photo { box-shadow: 0 0 40px rgba(212,160,23,.10); }
 
-/* Skeleton em modo claro */
-[data-theme="light"] .skeleton {
-  background: linear-gradient(90deg, #DADADA 25%, #EEEEEE 50%, #DADADA 75%);
-  background-size: 200% 100%;
-}
+/* Pagamento */
+[data-theme="light"] .pay-card { background: #FFFFFF; border-color: rgba(0,0,0,.08); }
+[data-theme="light"] .pay-card:hover { background: #FAFAFA; border-color: var(--gold-b); }
+[data-theme="light"] .pay-name { color: #0A0A0A; }
 
-/* Placeholder de anúncio sem foto */
-[data-theme="light"] .ad-placeholder {
-  background: linear-gradient(135deg, #E8E8E8 0%, #F5F5F5 100%);
-}
+/* Footer */
+[data-theme="light"] .footer { background: #E2E2E5; border-top-color: rgba(0,0,0,.09); }
+[data-theme="light"] .footer-legal { color: rgba(0,0,0,.4); }
 
-/* Botões de outline adaptados */
+/* Dividers */
+[data-theme="light"] .divider { background: rgba(0,0,0,.07); }
+
+/* Botões */
 [data-theme="light"] .btn-outline {
-  border-color: rgba(0,0,0,.22);
-  color: var(--white);
+  border-color: rgba(0,0,0,.22); color: #0A0A0A;
 }
 [data-theme="light"] .btn-outline:hover {
-  border-color: rgba(0,0,0,.55);
-  background: rgba(0,0,0,.05);
+  border-color: rgba(0,0,0,.5); background: rgba(0,0,0,.04);
 }
+[data-theme="light"] .cta-final .btn-dark { background: #0A0A0A; color: var(--gold); }
 
-/* btn-dark no CTA final (ouro) — manter legibilidade */
-[data-theme="light"] .cta-final .btn-dark { color: #FFFFFF; }
+/* Skeleton */
+[data-theme="light"] .skeleton {
+  background: linear-gradient(90deg,#DADADA 25%,#EEEEEE 50%,#DADADA 75%);
+  background-size: 200% 100%;
+}
+/* Hero grid */
+[data-theme="light"] .hero-grid { filter: invert(1); }
 
-/* Hero grid menos visível no claro */
-[data-theme="light"] .hero-grid { opacity: .018; filter: invert(1); }
+/* Toggle */
+[data-theme="light"] #theme-toggle { background: #FFFFFF; border-color: rgba(0,0,0,.12); }
 
 /* Toggle button */
 #theme-toggle {

@@ -1,12 +1,31 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<script>
+/* ── KJS THEME ── */
+(function(){
+  var t = localStorage.getItem('kjs_theme');
+  document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+})();
+function kjs_toggleTheme(){
+  var cur  = document.documentElement.getAttribute('data-theme') || 'dark';
+  var next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('kjs_theme', next);
+  var ic = document.getElementById('theme-icon');
+  if(ic) ic.textContent = next === 'dark' ? '☀️' : '🌙';
+}
+document.addEventListener('DOMContentLoaded', function(){
+  var t  = document.documentElement.getAttribute('data-theme') || 'dark';
+  var ic = document.getElementById('theme-icon');
+  if(ic) ic.textContent = t === 'dark' ? '☀️' : '🌙';
+});
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KJS Business — Painel</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <script src="js/theme.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
