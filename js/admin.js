@@ -385,11 +385,20 @@ async function _uploadFotos() {
   const paths = [];
   for (const f of _fotosUpload) {
     if (f.file) {
-      const ext  = f.file.name.split('.').pop();
+      const ext  = f.file.name.split('.').pop().toLowerCase();
       const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error } = await _db.storage.from('fotos-kjs').upload(path, f.file, { upsert: true });
-      if (!error) paths.push(path);
-    } else {
+      const { data, error } = await _db.storage.from('fotos-kjs').upload(path, f.file, {
+        upsert: true,
+        contentType: f.file.type || 'image/jpeg'
+      });
+      if (error) {
+        console.error('Erro upload foto:', error);
+        _toast('Erro no upload da foto: ' + error.message, 'erro');
+      } else {
+        paths.push(path);
+      }
+    } else if (typeof f === 'string') {
+      // já é um path salvo anteriormente
       paths.push(f);
     }
   }
@@ -520,6 +529,19 @@ function _toast(msg, tipo = 'ok') {
   el.style.transform = 'translateX(-50%) translateY(0)';
   el.style.opacity = '1';
   setTimeout(() => { el.style.transform = 'translateX(-50%) translateY(80px)'; el.style.opacity = '0'; }, 3000);
+}
+
+// ── fotoUrl local (caso core.js não esteja carregado antes) ──
+function fotoUrl(path) {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `${SUPABASE_URL_ADMIN}/storage/v1/object/public/fotos-kjs/${path}`;
+}
+
+// ── formatarData local ────────────────────────────────────
+function formatarData(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('pt-BR');
 }
 
 // ── Init ──────────────────────────────────────────────────

@@ -147,10 +147,24 @@ function specsTexto(a) {
 // ============================================================
 // FOTO PRINCIPAL — primeira do array ou placeholder
 // ============================================================
+// ── URLs de Storage ──────────────────────────────────────
+const STORAGE_BASE = SUPABASE_URL + '/storage/v1/object/public/fotos-kjs/';
+const FOTO_PLACEHOLDER = 'data:image/svg+xml,' + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">' +
+  '<rect fill="#1E1E1E" width="400" height="300"/>' +
+  '<text fill="#555" font-family="sans-serif" font-size="14" x="50%" y="50%" text-anchor="middle" dy=".3em">Sem foto</text></svg>'
+);
+
+function fotoUrl(path) {
+  if (!path) return FOTO_PLACEHOLDER;
+  if (path.startsWith('http') || path.startsWith('data:')) return path;
+  return STORAGE_BASE + path;
+}
+
 function fotoPrincipal(fotos) {
   return (fotos && fotos.length > 0)
-    ? fotos[0]
-    : 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"><rect fill="%231E1E1E" width="400" height="300"/><text fill="%23555" font-family="sans-serif" font-size="14" x="50%25" y="50%25" text-anchor="middle" dy=".3em">Sem foto</text></svg>';
+    ? fotoUrl(fotos[0])
+    : FOTO_PLACEHOLDER;
 }
 
 // ============================================================
