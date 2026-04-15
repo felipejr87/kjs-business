@@ -409,6 +409,7 @@ document.addEventListener('DOMContentLoaded', function(){
       padding:24px; text-align:center; cursor:pointer; transition:border-color .2s;
     }
     .upload-area:hover { border-color:var(--primary-b); }
+    .upload-area { display:block; }  /* label precisa de display:block */
     .preview-fotos { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
     .preview-foto { position:relative; width:72px; height:54px; border-radius:var(--r-md); overflow:hidden; }
     .preview-foto img { width:100%; height:100%; object-fit:cover; }
@@ -608,11 +609,11 @@ document.addEventListener('DOMContentLoaded', function(){
       </div>
       <!-- Fotos -->
       <div class="secao-form">Fotos</div>
-      <div class="upload-area" onclick="document.getElementById('f-fotos').click()">
-        <input type="file" id="f-fotos" accept="image/*" multiple onchange="onFotosChange(event)" style="display:none">
+      <label class="upload-area" for="f-fotos" id="upload-label">
+        <input type="file" id="f-fotos" accept="image/*" multiple style="display:none">
         <div style="font-size:28px;margin-bottom:8px">📷</div>
-        <div style="font-size:13px;color:var(--text-2)">Clique para adicionar fotos<br><small style="color:var(--text-3)">A primeira foto será a capa</small></div>
-      </div>
+        <div style="font-size:13px;color:var(--text-2)" id="upload-txt">Clique para adicionar fotos<br><small style="color:var(--text-3)">A primeira foto será a capa</small></div>
+      </label>
       <div class="preview-fotos" id="preview-fotos"></div>
       <!-- Status e destaque -->
       <div class="secao-form">Configurações</div>
